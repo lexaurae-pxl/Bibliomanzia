@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Bibliomanzia · percorso sonoro nella Biblioteca Dionisio Roberti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; color: #f2e3c8; overflow-x: hidden;
+    font-family: "Lora", Georgia, serif; font-size: 1.1rem; line-height: 1.75;
+    background:
+      radial-gradient(60vmax 50vmax at 50% 0%, rgba(224,179,78,0.16), transparent 62%),
+      radial-gradient(70vmax 55vmax at 50% 118%, rgba(142,59,77,0.28), transparent 62%),
+      linear-gradient(180deg, #2a1a0b, #180e05 55%, #100903);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hidden { display: none !important; }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 0 18px; }
+
+  /* tappe a schermo pieno */
+  .step {
+    min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    padding: 60px 20px; animation: fade .6s ease-out;
+  }
+  @keyframes fade { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .kicker { font-family: Arial, Helvetica, sans-serif; font-size: 0.72rem; letter-spacing: 4px; color: #c99a5e; margin-bottom: 18px; }
+  h1 { font-size: clamp(1.8rem, 6vw, 3rem); letter-spacing: 6px; font-weight: 400; margin: 0 0 0.4em; }
+  .q { font-size: clamp(1.35rem, 4vw, 2rem); line-height: 1.4; margin: 0 0 1.6rem; max-width: 20ch; }
+  p { margin: 0 0 1em; color: #ddcfb8; max-width: 42ch; }
+  .small { font-size: 0.92rem; color: #b9a98e; }
+  em { color: #e8b34e; font-style: italic; }
+
+  .choices { display: grid; gap: 0.7rem; width: min(420px, 92vw); }
+  .choice {
+    font-family: "Lora", serif; font-size: 1.05rem; color: #f2e3c8; cursor: pointer;
+    background: rgba(255,255,255,0.045); border: 1px solid #8a5a22;
+    border-radius: 999px; padding: 0.95rem 1.4rem; text-align: center;
+    transition: transform .25s ease, background .25s ease, border-color .25s ease;
+  }
+  .choice:hover { transform: translateY(-2px); background: rgba(232,179,78,0.14); border-color: #e8b34e; }
+  .btn { font-family: "Lora", serif; font-size: 1.08rem; color: #241608; cursor: pointer; background: linear-gradient(120deg, #e8b34e, #c99a5e); border: 0; border-radius: 999px; padding: 1.05rem 2.6rem; }
+  .btn.ghost { background: none; border: 1px solid #8a5a22; color: #e0c189; }
+  .nav { margin-top: 2rem; display: flex; gap: 1rem; }
+  .nav span { font-size: .8rem; color: #a3763a; font-family: Arial, Helvetica, sans-serif; cursor: pointer; }
+  .nav span:hover { color: #e8b34e; }
+
+  .video-slot { width: min(700px, 94vw); aspect-ratio: 16/9; border: 1px solid #8a5a22; border-radius: 12px; overflow: hidden; background: #000; }
+  .video-slot iframe { width: 100%; height: 100%; border: 0; }
+  .qr-slot { width: 190px; height: 190px; margin: 0.8rem auto 0; border: 1px dashed #8a5a22; border-radius: 12px; display: grid; place-items: center; background: rgba(0,0,0,0.3); padding: 1rem; }
+  .qr-slot img { width: 100%; height: auto; display: block; border-radius: 8px; background: #fff; padding: 8px; }
+
+  /* ── telefono ── */
+  @media (max-width: 560px) {
+    body { font-size: 1.02rem; line-height: 1.7; }
+    .step { padding: 44px 16px; }
+    h1 { letter-spacing: 6px !important; font-size: 2.5rem !important; }
+    .q { font-size: 1.3rem; max-width: 100%; }
+    p { max-width: 100%; }
+    .choice { padding: 1.05rem 1.1rem; font-size: 1rem; }
+    .choices { width: 100%; }
+    .btn { width: 100%; padding: 1.05rem 1.4rem; }
+    .actions .btn { width: 100%; }
+    .video-slot { width: 100%; }
+    .sheet { padding: 1.5rem 1.15rem; min-height: auto; }
+    .answer { font-size: 1.2rem; }
+    .vol { font-size: 0.7rem; letter-spacing: 2px; }
+    .attribution { font-size: 0.8rem; }
+    .frame-in { padding: 1.7rem 1.1rem; }
+    .word { font-size: 1.25rem; }
+    .thanks { font-size: 1.02rem; line-height: 1.75; }
+    .qr-slot { width: 165px; height: 165px; }
+    .closed-book { width: 60vw; }
+    .pageflip { width: 60vw; }
+    .spine { height: 140px; font-size: 0.7rem; padding: 10px 7px; }
+    .spine .a { font-size: 0.6rem; margin-inline-start: 12px; }
+    .shelf { gap: 6px; }
+  }
+
+  .count { font-family: Arial, Helvetica, sans-serif; font-size: .78rem; letter-spacing: 3px; color: #a3763a; margin-bottom: 1.4rem; }
+
+  /* scaffale */
+  .shelf-block { padding: 40px 0 3rem; }
+  .shelf-wrap { max-width: 980px; margin: 0 auto; }
+  .shelf { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; align-items: end; padding: 0 4px; }
+  .plank { height: 14px; background: linear-gradient(180deg, #6b4a26, #3a2412); margin: 0 -8px; border-radius: 2px; box-shadow: 0 6px 12px -6px rgba(0,0,0,0.9); }
+  .spine {
+    border: 0; padding: 0; cursor: pointer; background: none;
+    height: 168px; border-radius: 3px 3px 0 0; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    writing-mode: vertical-rl; text-orientation: mixed;
+    font-family: "Lora", serif; font-size: 0.8rem; line-height: 1.55;
+    color: #fbf3e2; text-align: center; padding: 14px 10px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6);
+    box-shadow: inset -4px 0 7px rgba(0,0,0,0.5), inset 2px 0 3px rgba(255,255,255,0.06);
+    transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s;
+  }
+  .spine:hover { transform: translateY(-14px); box-shadow: inset -4px 0 7px rgba(0,0,0,0.5), 0 14px 20px -8px rgba(0,0,0,0.95); }
+  .spine:focus-visible { outline: 2px solid #e8b34e; outline-offset: 2px; }
+  .spine .t { display: block; max-height: 100%; font-weight: 600; letter-spacing: .04em; }
+  .spine .a { display: block; max-height: 100%; font-size: 0.66rem; color: #ffe9c4; font-style: italic; margin-inline-start: 16px; }
+  @media (max-width: 720px) { .shelf { grid-template-columns: repeat(3, 1fr); gap: 8px; } .spine { height: 150px; font-size: 0.72rem; } }
+
+  /* libro che esce */
+  .fly { position: fixed; inset: 0; z-index: 40; display: flex; background: rgba(10,6,2,0.88); backdrop-filter: blur(3px); padding: 18px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .fly > * { margin: auto; width: 100%; }
+  .fly-inner { text-align: center; animation: fade .45s ease-out; max-width: 100%; }
+  .closed-book { position: relative; width: min(230px, 58vw); cursor: pointer; margin: 1.2rem auto 0; display: block; }
+  .closed-book > svg:first-child { display: block; width: 100%; height: auto; filter: drop-shadow(0 26px 34px rgba(0,0,0,0.75)); }
+  .closed-book:active > svg:first-child { transform: scale(0.97); }
+  .pageflip { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; display: none; filter: drop-shadow(0 26px 34px rgba(0,0,0,0.75)); animation: hover 0.55s ease-in-out infinite; }
+  .pageflip .leaf { position: absolute; inset: 0; transform-origin: left center; }
+  .flip1 { animation: flip 0.5s ease-in-out infinite; }
+  .flip2 { animation: flip 0.5s ease-in-out 0.12s infinite; }
+  @keyframes flip { 0% { transform: rotateY(0deg); } 45% { transform: rotateY(-78deg); } 55% { transform: rotateY(-78deg); } 100% { transform: rotateY(0deg); } }
+  @keyframes hover { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-9px) rotate(1.2deg); } }
+  .prompt { margin-top: 1rem; font-style: italic; color: #c99a5e; }
+
+  .reader { max-width: 720px; margin: 0 auto; animation: fade .5s ease-out; text-align: center; }
+  .vol { font-size: 0.85rem; letter-spacing: 3px; color: #c99a5e; margin-bottom: 0.8rem; font-family: Arial, Helvetica, sans-serif; }
+  .spread { border-radius: 6px; overflow: hidden; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.85); }
+  .sheet { background: linear-gradient(180deg, #efe0bd, #e3cf9f); color: #3a2410; min-height: 300px; padding: 2rem 1.7rem; display: flex; flex-direction: column; justify-content: center; }
+  .sheet.left { box-shadow: inset -14px 0 22px -14px rgba(0,0,0,0.45); border-radius: 6px 0 0 6px; }
+  .sheet.right { box-shadow: inset 14px 0 22px -14px rgba(0,0,0,0.45); border-radius: 0 6px 6px 0; }
+  .answer { font-size: clamp(1.25rem, 2.6vw, 1.75rem); line-height: 1.6; }
+  .attribution { margin-top: 1.2rem; font-size: .85rem; font-style: italic; color: #6b4a26; }
+  .actions { display: flex; gap: .8rem; justify-content: center; flex-wrap: wrap; margin-top: 1.8rem; }
+  @media (max-width: 620px) {
+    .spread { display: block; }
+    .sheet.left { box-shadow: inset 0 14px 22px -14px rgba(0,0,0,0.45); border-radius: 6px 6px 0 0; min-height: auto; }
+    .sheet.right { box-shadow: inset 0 14px 22px -14px rgba(0,0,0,0.45); border-radius: 0 0 6px 6px; }
+  }
+
+  #parola, #parola-libro { width: min(420px, 92vw); padding: 1rem 1.2rem; margin: 1.2rem auto 0; display: block; font: inherit; font-size: 1.2rem; color: #f2e3c8; text-align: center; background: rgba(0,0,0,0.35); border: 1px solid #8a5a22; border-radius: 14px; }
+  #parola::placeholder, #parola-libro::placeholder { color: #7a5f3a; }
+  .frame { max-width: 460px; margin: 0 auto; padding: 14px; background: linear-gradient(140deg, #8a6a2f, #c9a44e 45%, #6b4a26); border-radius: 8px; box-shadow: 0 26px 44px -18px rgba(0,0,0,0.9); }
+  .frame-in { border: 1px solid rgba(255,255,255,0.25); border-radius: 4px; background: linear-gradient(180deg, #efe0bd, #e3cf9f); color: #3a2410; padding: 2.2rem 1.6rem; }
+  .word { font-size: clamp(1.3rem, 3.4vw, 1.9rem); line-height: 1.5; margin: 0; }
+  .author { margin: 1rem 0 0; font-size: .85rem; font-style: italic; color: #6b4a26; }
+  .thanks { margin-top: 1.6rem; font-size: 1.15rem; font-style: italic; color: #e0c189; line-height: 1.9; }
+  .muro { margin-top: 2rem; display: grid; gap: .8rem; text-align: left; }
+  .muro .card { border-left: 3px solid #a3763a; padding: .6rem 1rem; background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; }
+  .muro .card .w { font-style: italic; color: #f2e3c8; }
+
+  /* componimento collettivo (caviardage) */
+  .poem { max-width: 540px; margin: 1.6rem auto 0; text-align: center; font-style: italic; line-height: 2.1; color: #f2e3c8; font-size: 1.08rem; }
+  .poem .pline { margin: 0.3em 0; }
+  .poem .wq { color: #e8b34e; }
+  .poem .b { display: inline-block; background: #241608; border: 1px solid #8a5a22; border-radius: 3px; height: 0.85em; vertical-align: middle; margin: 0 3px; }
+</style>
+<meta name="ai-disclosure" content="ai-autonomous" ai-model="GLM-5.3-Flash" ai-provider="Thaura"><meta name="generator" content="Thaura (GLM-5.3-Flash)"></head>
+<body>
+
+<!-- ══════════ TAPPA 1 ══════════ -->
+<section class="step" id="t1">
+  <h1 style="font-size:clamp(2.6rem,11vw,5rem);letter-spacing:10px;margin-bottom:0.2em;">BIBLIOMANZIA</h1>
+  <p class="q">Un percorso sonoro interattivo per biblioteche.</p>
+  <p>In un mondo che risponde subito a tutto, Bibliomanzia restituisce <em>il tempo della domanda</em>: una biblioteca, un libro, un silenzio e una traccia da lasciare.</p>
+  <p class="small">Il percorso dura <strong>20/25 minuti</strong>.</p>
+  <div class="choices" style="margin-top:1.4rem;">
+    <button class="choice" data-next="t2">Continua →</button>
+  </div>
+</section>
+
+<!-- ══════════ TAPPA 2 ══════════ -->
+<section class="step hidden" id="t2">
+  <p class="count">2 · 7</p>
+  <p class="q">Conosci la biblioteca vicino casa tua?</p>
+  <div class="choices">
+    <button class="choice" data-next="t3">Ci sono cresciutə</button>
+    <button class="choice" data-next="t3">Sì, la conosco</button>
+    <button class="choice" data-next="t3">So che c'è, ma non ci sono mai entratə</button>
+  </div>
+</section>
+
+<!-- ══════════ TAPPA 3 ══════════ -->
+<section class="step hidden" id="t3">
+  <p class="count">3 · 7</p>
+  <p class="q">Quanto tempo passi in biblioteca?</p>
+  <div class="choices">
+    <button class="choice" data-next="t4">Non ci vado mai</button>
+    <button class="choice" data-next="t4">Poco: entro, prendo un libro, esco</button>
+    <button class="choice" data-next="t4">Un'ora o due, ogni tanto</button>
+    <button class="choice" data-next="t4">Ci sto spesso, anche solo per stare</button>
+  </div>
+</section>
+
+<!-- ══════════ TAPPA 4 · perché ══════════ -->
+<section class="step hidden" id="t4">
+  <p class="count">4 · 7</p>
+  <p class="q">Perché serve un progetto così.</p>
+  <p>Per avvicinarsi alla biblioteca come <em>terzo spazio</em>: né casa, né lavoro.</p>
+  <p>Per <em>guardarsi dentro</em> e contemplare il silenzio.</p>
+  <p>Per vivere un'esperienza di <em>liveness</em>: persone insieme, nello stesso luogo, che ascoltano una voce che le guida nel percorso.</p>
+  <p>Tra i nostri intenti:</p>
+  <p>Creare un'<em>esperienza phygital</em>: una condivisione a metà tra un percorso in cuffia ed esperienziale.</p>
+  <p><em>Riportare le persone in biblioteca</em>, partendo da quella di Sansepolcro, e trovare e raccontare la storia di varie biblioteche in più città.</p>
+  <div class="choices" style="margin-top:1rem;">
+    <button class="choice" data-next="t5">Continua →</button>
+  </div>
+</section>
+
+<!-- ══════════ TAPPA 5 · video ══════════ -->
+<section class="step hidden" id="t5">
+  <p class="count">5 · 7</p>
+  <p class="q">Intravedi il percorso.</p>
+  <p>Questo è il <strong>trailer</strong> del percorso che facciamo dentro la Biblioteca Dionisio Roberti di Sansepolcro. Il resto si vive in biblioteca.</p>
+  <div class="video-slot" style="margin-top:1.2rem;">
+    <iframe src="https://drive.google.com/file/d/1nZa4uIXcVIq6nX5lz5I9Ko9yeYhCCh7H/preview" allow="autoplay; fullscreen" allowfullscreen title="Trailer Bibliomanzia"></iframe>
+  </div>
+  <p class="q" style="margin-top:1.8rem;font-size:clamp(1.2rem,3.4vw,1.7rem);">…e il resto si scopre <em>in biblioteca</em>.</p>
+  <div class="choices" style="margin-top:1.2rem;">
+    <button class="choice" data-next="t6">Continua →</button>
+  </div>
+</section>
+
+<!-- ══════════ TAPPA 6 · la bibliomanzia ══════════ -->
+<section class="step hidden" id="t6">
+  <p class="count">6 · 7</p>
+  <p class="q">La bibliomanzia</p>
+  <p>È un'antica pratica: <em>si pone una domanda e si apre un libro a caso</em>, leggendo come risposta la prima parola che capita.</p>
+  <p>Chi partecipa non guarda: <strong>consulta</strong>. Sceglie il proprio percorso e il proprio libro, e può saltare qualunque azione.</p>
+  <p>Il nostro progetto nasce dalla biblioteca di Sansepolcro, che per casualità, o forse destino, è legata alla bibliomanzia: è intitolata a <em>Dionisio Roberti</em>, confessore di Petrarca e destinatario della sua famosa lettera dell'ascesa al Monte Ventoso. È proprio Dionisio a consigliare a Petrarca, per diradere i suoi dubbi e turbamenti, di affrontare la scalata portando con sé un libro, per poi aprirlo casualmente sulla cima e farsi ispirare dalle parole in esso contenute.</p>
+  <p>Cosa succede se, invece di cercare una risposta su uno schermo, la chiediamo a un libro scelto d'istinto, in silenzio, dentro una biblioteca?</p>
+  <div class="choices" style="margin-top:1rem;">
+    <button class="choice" data-next="t7">Continua →</button>
+  </div>
+</section>
+
+<!-- ══════════ TAPPA 7 · la domanda ══════════ -->
+<section class="step hidden" id="t7">
+  <p class="count">7 · 7</p>
+  <p class="q">Ora tocca a te.</p>
+  <p>Pensa a una domanda che ti porti dentro (se hai un dubbio su qualcosa, una decisione da prendere, ecc.).</p>
+  <p>Ripetila nella tua testa.</p>
+  <p class="small" style="margin-top:1.2rem;">Hai una domanda? Adesso scegli come consultare.</p>
+  <div class="choices" style="margin-top:1rem;">
+    <button class="choice" id="scelta-libro" type="button">Ho un libro tra le mie mani</button>
+    <button class="choice" id="scelta-shelf" type="button">Non ho un libro con me al momento, accedo allo scaffale digitale</button>
+  </div>
+</section>
+
+<!-- ══════════ PERCORSO CON LIBRO CARTACEO ══════════ -->
+<section class="step hidden" id="s-libro">
+  <p class="kicker">IL TUO LIBRO</p>
+  <p class="q">Apri il libro pensando alla tua domanda.</p>
+  <p>Sfoglia, fermati dove senti. La prima parola, o la breve frase, che salta all'occhio è la tua.</p>
+  <input id="parola-libro" type="text" maxlength="80" placeholder="la parola o la breve frase che salta all'occhio…" aria-label="La parola o la breve frase che salta all'occhio" style="margin-top:1.6rem;">
+  <div class="choices" style="margin-top:1.4rem;">
+    <button class="btn" id="condividi-libro" type="button">Condividi la parola</button>
+    <button class="btn ghost" id="tengo-libro" type="button">Preferisco tenerla per me</button>
+  </div>
+</section>
+
+<!-- ══════════ SCAFFALE ══════════ -->
+<div class="shelf-block hidden" id="scaffale">
+  <div class="wrap" style="text-align:center;">
+    <p class="kicker">LO SCAFFALE</p>
+    <p class="q" style="max-width:none;">Quale libro ti sta chiamando?</p>
+    <p class="small">Tocca un libro, poi <strong>tieni premuto</strong> per aprirlo: lascia quando senti che è il momento.</p>
+  </div>
+  <div class="shelf-wrap" id="shelf"></div>
+</div>
+
+<!-- ══════════ PAGINA DEI RINGRAZIAMENTI ══════════ -->
+<div class="fly hidden" id="s-grazie">
+  <div class="reader">
+    <p class="vol">BIBLIOMANZIA</p>
+    <p class="q">Grazie per aver dedicato del tempo ad ascoltarti.</p>
+    <p>Fallo più spesso, anche in biblioteca. <em>Ci vediamo lì.</em></p>
+    <p class="small" style="margin-top:2.2rem;">Se vuoi un percorso nella biblioteca della tua città, scrivici:</p>
+    <p><a href="mailto:progettobibliomanzia@gmail.com" style="color:#e8b34e;">progettobibliomanzia@gmail.com</a></p>
+    <div style="margin-top:2.4rem;">
+      <p class="small">Sostieni il progetto</p>
+      <div class="qr-slot">
+        <!-- QUI IL QR E IL LINK PAYPAL -->
+        <p style="color:#e8b34e;font-style:italic;margin:0;">[qui il QR e il link PayPal]</p>
+      </div>
+    </div>
+    <div class="actions"><button class="btn ghost" id="back3" type="button">Torna allo scaffale</button></div>
+  </div>
+</div>
+
+<footer style="text-align:center;padding:2rem 1rem 3rem;font-family:Arial,Helvetica,sans-serif;font-size:.82rem;color:#a3763a;">
+  Bibliomanzia · ideazione e drammaturgia Alessandra Borgosano e Anna Farina · sound design Simone Lo Presti
+</footer>
+
+<!-- ══════════ SCHERMATE ══════════ -->
+<div class="fly hidden" id="s-fly">
+  <div class="fly-inner">
+    <p class="prompt" id="prompt-closed">pensa alla tua domanda — poi apri il libro</p>
+    <button class="closed-book" id="openBtn" type="button" aria-label="Apri il libro">
+      <svg viewBox="0 0 260 200" role="img" aria-label="Libro chiuso">
+        <rect x="20" y="30" width="220" height="150" rx="8" fill="#4a2f18" stroke="#2b1a0c" stroke-width="3"/>
+        <rect x="20" y="30" width="14" height="150" fill="#3a2412"/>
+        <rect x="34" y="30" width="192" height="150" rx="6" fill="#5a3a18"/>
+        <rect x="66" y="66" width="128" height="78" rx="4" fill="#efe0bd" opacity="0.92"/>
+        <text x="130" y="104" text-anchor="middle" font-family="Lora, serif" font-size="17" fill="#5a3a18">trova la</text>
+        <text x="130" y="125" text-anchor="middle" font-family="Lora, serif" font-size="17" fill="#5a3a18">tua risposta</text>
+        <rect x="16" y="176" width="228" height="8" rx="3" fill="#2b1a0c"/>
+      </svg>
+      <svg class="pageflip" id="pageflip" viewBox="0 0 260 200" aria-hidden="true">
+        <rect x="20" y="30" width="220" height="150" rx="8" fill="#4a2f18" stroke="#2b1a0c" stroke-width="3"/>
+        <rect x="34" y="30" width="192" height="150" rx="6" fill="#5a3a18"/>
+        <g class="leaf flip1"><path d="M 44 30 L 200 30 L 200 180 L 44 180 Z" fill="#efe0bd"/><path d="M 44 30 L 200 30 L 200 180 L 44 180 Z" fill="none" stroke="#c9a86a" stroke-width="2"/></g>
+        <g class="leaf flip2"><path d="M 44 30 L 200 30 L 200 180 L 44 180 Z" fill="#e3cf9f"/><path d="M 44 30 L 200 30 L 200 180 L 44 180 Z" fill="none" stroke="#c9a86a" stroke-width="2"/></g>
+        <rect x="16" y="176" width="228" height="8" rx="3" fill="#2b1a0c"/>
+      </svg>
+    </button>
+    <p class="prompt" id="prompt-flip" style="display:none;">stai sfogliando… lascia quando senti che è il momento</p>
+  </div>
+</div>
+
+<div class="fly hidden" id="s-read">
+  <div class="reader">
+    <p class="vol" id="vol"></p>
+    <div class="spread">
+      <div class="sheet left">
+        <span class="answer" id="testo"></span>
+        <p class="attribution" id="attrib"></p>
+      </div>
+      <div class="sheet right"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" id="altro" type="button">Un'altra pagina</button>
+      <button class="btn ghost" id="parola-gui" type="button">Scrivi la parola o la breve frase che hai letto per prima</button>
+      <button class="btn" id="fine" type="button">Giungiamo alla fine</button>
+    </div>
+  </div>
+</div>
+
+<div class="fly hidden" id="s-share">
+  <div class="reader">
+    <p class="vol">BIBLIOMANZIA</p>
+    <p style="color:#e0c189;font-style:italic;">C'è una parola, una frase che tieni con te?</p>
+    <p style="color:#ddcfb8;">Scrivila, o lasciala nel silenzio.<br>Se la condividi, resta qui come traccia di chi è passato.</p>
+    <input id="parola" type="text" maxlength="80" placeholder="la parola o la breve frase che salta all'occhio…" aria-label="La parola o la breve frase che salta all'occhio">
+    <div class="actions" style="margin-top:1.2rem;">
+      <button class="btn" id="condividi" type="button">Condividi la parola</button>
+      <button class="btn ghost" id="tengo" type="button">Preferisco tenerla per me</button>
+    </div>
+  </div>
+</div>
+
+<div class="fly hidden" id="s-wall">
+  <div class="reader">
+    <p class="vol">LA TUA PAROLA</p>
+    <div id="wall-shared" class="hidden">
+      <div class="frame"><div class="frame-in"><p class="word" id="shared-word"></p><p class="author" id="shared-author"></p></div></div>
+      <p class="thanks">Grazie per aver dedicato del tempo ad ascoltarti.<br>Fallo più spesso, anche in biblioteca.<br>Ci vediamo lì.</p>
+      <div class="muro" id="muro"></div>
+      <div class="actions">
+        <button class="btn" id="verso-poema1" type="button">Continua →</button>
+        <button class="btn ghost" id="back1" type="button">Torna allo scaffale</button>
+      </div>
+    </div>
+    <div id="wall-private">
+      <p class="thanks">Grazie per aver dedicato del tempo ad ascoltarti.<br>Fallo più spesso, anche in biblioteca.<br>Ci vediamo lì.</p>
+      <p class="small" style="margin-top:2rem;">Se vuoi un percorso nella biblioteca della tua città, scrivici:<br><a href="mailto:progettobibliomanzia@gmail.com" style="color:#e8b34e;">progettobibliomanzia@gmail.com</a></p>
+      <div class="qr-slot" style="margin-top:1.2rem;">
+        <p style="color:#e8b34e;font-style:italic;margin:0;">[qui il QR e il link PayPal]</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="verso-poema2" type="button">Continua →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ IL COMPOPONIMENTO COLLETTIVO ══════════ -->
+<div class="fly hidden" id="s-poem">
+  <div class="reader">
+    <p class="vol">BIBLIOMANZIA</p>
+    <p class="q" style="font-size:clamp(1.2rem,3.4vw,1.7rem);">Il componimento collettivo</p>
+    <p class="small">Tutte le parole condivise si mescolano: è un caviardage, un componimento che nasce dalle pagine e da chi le ha attraversate.</p>
+    <div id="poem-body" class="poem"></div>
+    <p class="thanks" style="margin-top:2rem;">Questo è un esempio di quanto le parole possano raccontare una storia, e di quanto possano entrarti dentro: insieme le abbiamo tirate fuori e abbiamo creato qualcosa di collettivo.<br>Questo è l'effetto che vogliamo per Bibliomanzia.</p>
+    <div class="actions">
+      <button class="btn" id="verso-grazie" type="button">Continua →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ── LE TAPPE ── */
+  var tappe = ["t1","t2","t3","t4","t5","t6","t7"];
+  function vaiA(id) {
+    tappe.forEach(function (t) { document.getElementById(t).classList.add("hidden"); });
+    var el = document.getElementById(id);
+    el.classList.remove("hidden");
+    window.scrollTo({ top: 0 });
+  }
+  document.querySelectorAll("[data-next]").forEach(function (b) {
+    b.addEventListener("click", function () { vaiA(b.getAttribute("data-next")); });
+  });
+  function nascondiTappe() {
+    tappe.forEach(function (t) { document.getElementById(t).classList.add("hidden"); });
+  }
+  document.getElementById("scelta-libro").addEventListener("click", function () {
+    nascondiTappe();
+    document.getElementById("parola-libro").value = "";
+    document.getElementById("s-libro").classList.remove("hidden");
+    window.scrollTo({ top: 0 });
+  });
+  document.getElementById("scelta-shelf").addEventListener("click", function () {
+    nascondiTappe();
+    document.getElementById("scaffale").classList.remove("hidden");
+    window.scrollTo({ top: 0 });
+  });
+
+  /* ── I LIBRI SULLO SCAFFALE (citazioni vere) ── */
+  var LIBRI = [
+    { titolo: "Le città invisibili", autore: "Italo Calvino", colore: "#2f6b5e", citazioni: [
+      "L'occhio non vede cose ma figure di cose che significano altre cose.",
+      "Ogni vita è un'enciclopedia, una biblioteca, un inventario di oggetti, un campionario di stili.",
+      "La fantasia è un posto dove ci piove dentro." ] },
+    { titolo: "La Divina Commedia", autore: "Dante Alighieri", colore: "#6b3a2a", citazioni: [
+      "Nel mezzo del cammin di nostra vita mi ritrovai per una selva oscura, ché la diritta via era smarrita.",
+      "Non ragioniam di lor, ma guarda e passa.",
+      "L'amor che move il sole e l'altre stelle." ] },
+    { titolo: "Il nome della rosa", autore: "Umberto Eco", colore: "#5a3a18", citazioni: [
+      "Stat rosa pristina nomine, nomina nuda tenemus.",
+      "Mi avvedevo ora che si possono sognare anche dei libri, e dunque si possono sognare dei sogni.",
+      "L'anticristo può nascere dalla stessa pietà, dall'eccessivo amore di Dio o della verità.",
+      "Dell'unico amore terreno della mia vita non avevo saputo, né seppi mai, il nome." ] },
+    { titolo: "Il barone rampante", autore: "Italo Calvino", colore: "#3a5a40", citazioni: [
+      "Se alzi un muro, pensa a ciò che resta fuori!",
+      "Si conobbero. Lui conobbe lei e se stesso, perché in verità non s'era mai saputo.",
+      "Chi vuole guardare bene la terra deve tenersi alla distanza necessaria.",
+      "La disobbedienza acquista un senso solo quando diventa una disciplina morale più rigorosa e ardua di quella a cui si ribella.",
+      "Cosimo Piovasco di Rondò — Visse sugli alberi — Amò sempre la terra — Salì in cielo." ] },
+    { titolo: "Se una notte d'inverno un viaggiatore", autore: "Italo Calvino", colore: "#2f6b5e", citazioni: [
+      "Tu sai che il meglio che ci si può aspettare è di evitare il peggio.",
+      "Si legge da soli, anche quando si è in due." ] },
+    { titolo: "Cent'anni di solitudine", autore: "Gabriel García Márquez", colore: "#a3763a", citazioni: [
+      "Molti anni dopo, di fronte al plotone di esecuzione, il colonnello Aureliano Buendía si sarebbe ricordato di quel remoto pomeriggio in cui suo padre lo condusse a conoscere il ghiaccio.",
+      "Il mondo era così recente, che molte cose mancavano di nome, e per nominarle bisognava indicarle con il dito.",
+      "Non si muore quando si deve, ma quando si può.",
+      "Un minuto di riconciliazione vale più di un'intera vita di amicizia." ] },
+    { titolo: "Orgoglio e pregiudizio", autore: "Jane Austen", colore: "#8e5a6b", citazioni: [
+      "È verità universalmente riconosciuta che un uomo celibe, in possesso di una bella fortuna, abbia bisogno di una moglie." ] },
+    { titolo: "Il piccolo principe", autore: "A. de Saint-Exupéry", colore: "#3a6b8a", citazioni: [
+      "Ecco il mio segreto. È molto semplice: non si vede bene che col cuore. L'essenziale è invisibile agli occhi.",
+      "Solo i bambini sanno quello che cercano.",
+      "Tu diventi responsabile per sempre di ciò che hai addomesticato." ] },
+    { titolo: "Il deserto dei Tartari", autore: "Dino Buzzati", colore: "#7a6a4a", citazioni: [
+      "Giovanni Drogo adesso dorme nell'interno della terza ridotta.",
+      "Farà in tempo, Drogo, a vederla, o dovrà andarsene prima?",
+      "Un nodo stringeva il cuore di Drogo; addio sogni del tempo lontano." ] },
+    { titolo: "Canzoniere", autore: "Francesco Petrarca", colore: "#6b5a2a", citazioni: [
+      "Solo et pensoso i più deserti campi vo mesurando a passi tardi e lenti." ] },
+    { titolo: "La casa degli spiriti", autore: "Isabel Allende", colore: "#4a2f4f", citazioni: [
+      "Barrabás arrivò in famiglia per via mare, annotò la piccola Clara con la sua delicata calligrafia.",
+      "Clara abitava un universo inventato da lei, protetta dalle avversità della vita, dove la verità prosaica delle cose materiali si confondeva con la verità tumultuosa dei sogni.",
+      "Così come quando si viene al mondo, morendo abbiamo paura dell'ignoto. Ma la paura è qualcosa d'interiore che non ha nulla a che vedere con la realtà. Morire è come nascere: solo un cambiamento." ] },
+    { titolo: "Siddharta", autore: "Hermann Hesse", colore: "#5a7a8a", citazioni: [
+      "Non voglio sfuggire al mondo: voglio imparare a conoscerlo, a essere me stesso, a godere della sua bellezza.",
+      "La saggezza non si può comunicare. La scienza si può trasmettere, ma la saggezza no.",
+      "L'amore si può mendicare, comprare, regalare, si può trovarlo per caso sulla strada, ma non si può estorcere.",
+      "La gentilezza è più forte della durezza, l'acqua è più forte della roccia, l'amore è più forte della forza.",
+      "Non è per me giudicare la vita di un altro uomo. Io devo giudicare, io devo scegliere, io devo sdegnare soltanto me stesso." ] },
+    { titolo: "Frankenstein", autore: "Mary Shelley", colore: "#2f4f4f", citazioni: [
+      "Abbiate paura: io sono senza paura, e quindi potente.",
+      "Nulla è così doloroso per la mente umana come un grande e improvviso cambiamento.",
+      "Dopo giorni e notti di un lavoro e di una fatica incredibili, riuscii a scoprire la causa della generazione e della vita.",
+      "L'invenzione non è una creazione dal nulla, bensì dal caos.",
+      "L'inizio è sempre oggi." ] },
+    { titolo: "Poesie", autore: "Emily Dickinson", colore: "#8a5a6b", citazioni: [
+      "La «speranza» è la pennuta creatura — che si posa nell'anima — e canta melodie senza parole — e non smette mai — proprio mai —",
+      "Io non sono Nessuno! Chi sei tu? Sei — Nessuno — anche tu? Allora siamo in due! Non dirlo! spargerebbero la voce — lo sai!",
+      "Com'è squallido — essere — Qualcuno! Com'è ordinario — come una Rana — dire il proprio nome — per tutto giugno — a un Pantano ammirato!" ] },
+    { titolo: "La carta da parati gialla", autore: "Charlotte Perkins Gilman", colore: "#a3763a", citazioni: [
+      "Ci sono cose in quel carta da parati che nessuno sa tranne me, o mai saprà.",
+      "Avviene assai di rado che persone del tutto comuni come me e John si assicurino una dimora ancestrale per l'estate.",
+      "John è un medico, e forse questo è uno dei motivi per cui non miglioro più in fretta." ] },
+    { titolo: "Le Confessioni", autore: "Sant'Agostino", colore: "#5a4a6b", citazioni: [
+      "Ci hai fatto per te, Signore, e il nostro cuore è inquieto finché non riposa in te.",
+      "Che cos'è dunque il tempo? Se nessuno me lo chiede, lo so; se voglio spiegarlo a chi me lo chiede, non lo so.",
+      "Ti cercherò dunque perché l'anima mia viva, poiché l'anima mia vive di te.",
+      "Questi tre tempi sono nella mia anima e non li vedo altrove." ] },
+    { titolo: "Margherita Dolcevita", autore: "Stefano Benni", colore: "#b04a7a", citazioni: [
+      "I sogni sono come le bolle di sapone: nascono, volano, scoppiano. Ma non si può fare a meno di soffiarli.",
+      "Se i grandi non si sono ribellati, lo faremo noi. La storia ci guarda e non vorrei che vomitasse.",
+      "Ringrazia, ricambia, sorridi." ] },
+    { titolo: "La solitudine dei numeri primi", autore: "Paolo Giordano", colore: "#4a6b8a", citazioni: [
+      "Mattia pensava che lui e Alice erano così, due primi gemelli, soli e perduti, vicini ma non abbastanza vicini da toccarsi davvero.",
+      "Le scelte si fanno in pochi secondi e si scontano per il tempo restante.",
+      "Mattia lo faceva apposta a essere così silenzioso in ogni suo movimento." ] },
+    { titolo: "Il visconte dimezzato", autore: "Italo Calvino", colore: "#3a5a40", citazioni: [
+      "Ero intero e tutte le cose erano per me naturali e confuse, stupide come l'aria; credevo di veder tutto e non era che la scorza.",
+      "Avrai perso metà di te e del mondo, ma la metà rimasta sarà mille volte più profonda e preziosa.",
+      "Così mio zio Medardo ritornò uomo intero, né cattivo né buono, un miscuglio di cattiveria e bontà." ] },
+    { titolo: "Meditante Raccoglitore", autore: "volume pazzo", colore: "#6b2f6b", citazioni: [
+      "La risposta sta nel silenzio che segue.",
+      "Torna al luogo dove hai lasciato la parola.",
+      "Non chiedere di più al vento: guarda l'acqua.",
+      "Il passo che temi di fare è quello giusto.",
+      "Lascia che il tempo ti attraversi, non che ti chiuda.",
+      "Quello che cerchi è già in movimento.",
+      "Non è ancora il momento: prepara il terreno.",
+      "Riduci il rumore: la risposta è vicina.",
+      "Confida nel tuo istinto, come nella corrente.",
+      "Ascolta chi ha parlato prima di te.",
+      "Non spingere: lascia che entri.",
+      "Il mistero non va risolto, va abitato.",
+      "Ciò che lasci sarà trovato da qualcun altro.",
+      "Il corpo sa prima della mente.",
+      "Quello che sembrava un muro è una porta.",
+      "Rispondi prima a te stessə." ] }
+  ];
+
+  var shelfEl = document.getElementById("shelf");
+  var RIGA = 4;
+  for (var i = 0; i < LIBRI.length; i += RIGA) {
+    var row = document.createElement("div");
+    row.className = "shelf";
+    for (var j = i; j < i + RIGA && j < LIBRI.length; j++) {
+      (function (b) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "spine";
+        btn.style.background = b.colore;
+        btn.setAttribute("aria-label", b.titolo + " di " + b.autore);
+        btn.innerHTML = '<span class="t">' + b.titolo + '</span><span class="a">' + b.autore + '</span>';
+        btn.addEventListener("click", function () { entraNelLibro(b); });
+        row.appendChild(btn);
+      })(LIBRI[j]);
+    }
+    shelfEl.appendChild(row);
+    var plank = document.createElement("div");
+    plank.className = "plank";
+    shelfEl.appendChild(plank);
+  }
+
+  var sFly = document.getElementById("s-fly");
+  var sRead = document.getElementById("s-read");
+  var sShare = document.getElementById("s-share");
+  var sWall = document.getElementById("s-wall");
+  var sGrazie = document.getElementById("s-grazie");
+  var sPoem = document.getElementById("s-poem");
+  var sLibro = document.getElementById("s-libro");
+  var wallShared = document.getElementById("wall-shared");
+  var wallPrivate = document.getElementById("wall-private");
+  var sharedWord = document.getElementById("shared-word");
+  var sharedAuthor = document.getElementById("shared-author");
+  var muro = document.getElementById("muro");
+  var parolaInput = document.getElementById("parola");
+  var volEl = document.getElementById("vol");
+  var testo = document.getElementById("testo");
+  var attrib = document.getElementById("attrib");
+  var promptClosed = document.getElementById("prompt-closed");
+  var promptFlip = document.getElementById("prompt-flip");
+  var openBtn = document.getElementById("openBtn");
+  var pageflip = document.getElementById("pageflip");
+  var current = null;
+
+  function mostra(el) {
+    [sFly, sRead, sShare, sWall, sGrazie, sPoem].forEach(function (s) { s.classList.add("hidden"); });
+    sLibro.classList.add("hidden");
+    el.classList.remove("hidden");
+  }
+  function mostraScaffale() {
+    [sFly, sRead, sShare, sWall, sGrazie, sPoem].forEach(function (s) { s.classList.add("hidden"); });
+    sLibro.classList.add("hidden");
+    window.scrollTo({ top: 0 });
+  }
+
+  function entraNelLibro(libro) {
+    current = libro;
+    promptClosed.textContent = "pensa alla tua domanda — poi apri «" + libro.titolo + "»";
+    promptFlip.style.display = "none";
+    pageflip.style.display = "none";
+    mostra(sFly);
+  }
+
+  function apriLibro() {
+    var lista = current.citazioni;
+    var q = lista[Math.floor(Math.random() * lista.length)];
+    volEl.textContent = current.titolo.toUpperCase() + " · " + current.autore.toUpperCase();
+    testo.textContent = q;
+    attrib.textContent = "— " + current.titolo;
+    mostra(sRead);
+  }
+
+  var tenuto = false;
+  openBtn.addEventListener("pointerdown", function (e) {
+    e.preventDefault();
+    tenuto = true;
+    pageflip.style.display = "block";
+    promptClosed.style.display = "none";
+    promptFlip.style.display = "block";
+  });
+  function rilascia() {
+    if (!tenuto) return;
+    tenuto = false;
+    pageflip.style.display = "none";
+    apriLibro();
+  }
+  window.addEventListener("pointerup", rilascia);
+  window.addEventListener("pointercancel", rilascia);
+
+  document.getElementById("altro").addEventListener("click", function () { mostra(sFly); });
+  document.getElementById("fine").addEventListener("click", function () { mostra(sGrazie); });
+  document.getElementById("back3").addEventListener("click", mostraScaffale);
+  document.getElementById("parola-gui").addEventListener("click", function () {
+    parolaInput.value = "";
+    mostra(sShare);
+  });
+
+  /* ── le parole raccolte (si accumulano sul dispositivo) ── */
+  var raccolte = [];
+  try {
+    var salvate = window.localStorage.getItem("bibliomanzia-parole");
+    if (salvate) { raccolte = JSON.parse(salvate) || []; }
+  } catch (e) { raccolte = []; }
+  function salvaParole() {
+    try { window.localStorage.setItem("bibliomanzia-parole", JSON.stringify(raccolte)); } catch (e) {}
+  }
+  var parolaLibro = document.getElementById("parola-libro");
+
+  document.getElementById("condividi").addEventListener("click", function () {
+    var w = parolaInput.value.trim();
+    if (!w) { parolaInput.focus(); return; }
+    raccolte.push(w);
+    salvaParole();
+    componi();
+    mostra(sPoem);
+  });
+
+  document.getElementById("tengo").addEventListener("click", function () {
+    wallShared.classList.add("hidden");
+    wallPrivate.classList.remove("hidden");
+    mostra(sWall);
+  });
+
+  document.getElementById("back1").addEventListener("click", mostraScaffale);
+
+  /* ── percorso con il libro cartaceo ── */
+  document.getElementById("condividi-libro").addEventListener("click", function () {
+    var w = parolaLibro.value.trim();
+    if (!w) { parolaLibro.focus(); return; }
+    raccolte.push(w);
+    salvaParole();
+    componi();
+    mostra(sPoem);
+  });
+  document.getElementById("tengo-libro").addEventListener("click", function () {
+    wallShared.classList.add("hidden");
+    wallPrivate.classList.remove("hidden");
+    mostra(sWall);
+  });
+
+  /* ── il componimento collettivo (caviardage) ── */
+  var poemBody = document.getElementById("poem-body");
+  var RIGHE = [
+    "Nella biblioteca {b} {b}, qualcuno ha aperto un libro: {w}.",
+    "{w} — {b} {b} le pagine {b} {b} cerco, e ogni parola è una porta.",
+    "Nessuna risposta arriva: solo {w}, e il {b} di una domanda.",
+    "Voci diverse, {b} stesso silenzio: {w}, {w}, {w}.",
+    "Insieme {b} {b} {b}, {b} componimento che il silenzio non aspettava.",
+    "{w} {b} {b}: la storia più vera è {b} che raccontiamo {b} {b}."
+  ];
+  function mescola(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+  function esc(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function barra() {
+    return "<span class='b' style='width:" + (34 + Math.floor(Math.random() * 80)) + "px'></span>";
+  }
+  function componi() {
+    var parole = mescola(raccolte.slice());
+    var p = 0;
+    poemBody.innerHTML = RIGHE.map(function (riga) {
+      return "<p class='pline'>" + riga.replace(/\{w\}|\{b\}/g, function (tok) {
+        if (tok === "{w}") {
+          if (p < parole.length) { return "<span class='wq'>“" + esc(parole[p++]) + "”</span>"; }
+          return barra();
+        }
+        return barra();
+      }) + "</p>";
+    }).join("");
+  }
+  function vaiAlPoema() {
+    componi();
+    mostra(sPoem);
+  }
+  document.getElementById("verso-poema1").addEventListener("click", vaiAlPoema);
+  document.getElementById("verso-poema2").addEventListener("click", vaiAlPoema);
+  document.getElementById("verso-grazie").addEventListener("click", function () { mostra(sGrazie); });
+})();
+</script>
+</body>
+</html>
