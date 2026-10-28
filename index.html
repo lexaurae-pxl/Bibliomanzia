@@ -150,6 +150,7 @@
 
   /* componimento collettivo (caviardage) */
   .poem { max-width: 540px; margin: 1.6rem auto 0; text-align: center; font-style: italic; line-height: 2.1; color: #f2e3c8; font-size: 1.08rem; }
+  .poem.scrollabile { max-height: 56vh; overflow-y: auto; padding: 0 1rem; -webkit-overflow-scrolling: touch; }
   .poem .pline { margin: 0.3em 0; }
   .poem .wq { color: #e8b34e; }
   .poem .b { display: inline-block; background: #241608; border: 1px solid #8a5a22; border-radius: 3px; height: 0.85em; vertical-align: middle; margin: 0 3px; }
@@ -678,45 +679,76 @@
 
   /* ── il componimento collettivo (caviardage) ── */
   var poemBody = document.getElementById("poem-body");
-  var RIGHE = [
-    "Nella biblioteca {b} {b}, qualcuno ha aperto un libro: {w}.",
-    "{w} — {b} {b} le pagine {b} {b} cerco, e ogni parola è una porta.",
-    "Nessuna risposta arriva: solo {w}, e il {b} di una domanda.",
-    "Voci diverse, {b} stesso silenzio: {w}, {w}, {w}.",
-    "Insieme {b} {b} {b}, {b} componimento che il silenzio non aspettava.",
-    "{w} {b} {b}: la storia più vera è {b} che raccontiamo {b} {b}."
-  ];
-  function mescola(arr) {
-    for (var i = arr.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
-    }
-    return arr;
-  }
   function esc(s) {
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
   function barra() {
     return "<span class='b' style='width:" + (34 + Math.floor(Math.random() * 80)) + "px'></span>";
   }
+  function W(w) { return "<span class='wq'>“" + esc(w) + "”</span>"; }
   function componiCon(elenco) {
     var viste = {};
     var tutte = [];
-    elenco.forEach(function (w) {
-      var k = w.trim().toLowerCase();
-      if (k && !viste[k]) { viste[k] = true; tutte.push(w.trim()); }
+    elenco.forEach(function (x) {
+      var t = String(x || "").trim().replace(/\s+/g, " ");
+      if (!t) return;
+      var k = t.toLowerCase();
+      if (!viste[k]) { viste[k] = true; tutte.push(t); }
     });
-    var parole = mescola(tutte);
-    var p = 0;
-    poemBody.innerHTML = RIGHE.map(function (riga) {
-      return "<p class='pline'>" + riga.replace(/\{w\}|\{b\}/g, function (tok) {
-        if (tok === "{w}") {
-          if (p < parole.length) { return "<span class='wq'>“" + esc(parole[p++]) + "”</span>"; }
-          return barra();
+    var righe = [];
+    if (!tutte.length) {
+      righe.push("Nella biblioteca {b} {b}, i libri aspettano.");
+      righe.push("Nessuna parola è ancora saltata fuori {b} {b}.");
+      righe.push("Il componimento nasce quando qualcuno condivide la sua.");
+    } else {
+      righe.push("Nella biblioteca {b} {b}, qualcuno ha aperto un libro.");
+      if (tutte.length === 1) {
+        righe.push("e la tua è la prima: " + W(tutte[0]) + ".");
+        righe.push("Una parola sola, e già {b} qualcosa che resta:");
+      } else if (tutte.length === 2) {
+        righe.push(W(tutte[0]) + ", e poi " + W(tutte[1]) + ".");
+        righe.push("Da tante mani diverse, {b} un'unica pagina:");
+      } else if (tutte.length === 3) {
+        righe.push(W(tutte[0]) + ", " + W(tutte[1]) + ", e " + W(tutte[2]) + ".");
+        righe.push("Da tante mani diverse, {b} un'unica pagina:");
+      } else {
+        righe.push("Le parole sono saltate fuori, una dopo l'altra:");
+        var schemi = [
+          [1, function (q) { return W(q[0]) + "."; }],
+          [1, function (q) { return "e accanto, " + W(q[0]) + ";"; }],
+          [2, function (q) { return W(q[0]) + ", " + W(q[1]) + " —"; }],
+          [1, function (q) { return "c'è chi ha letto " + W(q[0]) + ","; }],
+          [2, function (q) { return "chi ha sussurrato " + W(q[0]) + " e " + W(q[1]) + "."; }],
+          [3, function (q) { return W(q[0]) + ", " + W(q[1]) + ", " + W(q[2]) + ":"; }],
+          [1, function (q) { return "e sotto tutto, " + W(q[0]) + "."; }],
+          [1, function (q) { return "la domanda {b} aspettava: " + W(q[0]) + "."; }]
+        ];
+        var rest = tutte.slice();
+        var i = 0;
+        while (rest.length) {
+          if (rest.length <= 3) {
+            var ultime = rest.splice(0, rest.length);
+            if (ultime.length === 1) {
+              righe.push("e infine, " + W(ultime[0]) + ".");
+            } else if (ultime.length === 2) {
+              righe.push("e infine, " + W(ultime[0]) + " e " + W(ultime[1]) + ".");
+            } else {
+              righe.push(W(ultime[0]) + ", " + W(ultime[1]) + ", e infine " + W(ultime[2]) + ".");
+            }
+          } else {
+            var s = schemi[i % schemi.length];
+            righe.push(s[1](rest.splice(0, s[0])));
+            i++;
+          }
         }
-        return barra();
-      }) + "</p>";
+        righe.push("Da tante mani diverse, {b} un'unica pagina:");
+      }
+      righe.push("la storia più vera è {b} che abbiamo {b} insieme.");
+    }
+    poemBody.innerHTML = righe.map(function (r) {
+      return "<p class='pline'>" + r.replace(/\{b\}/g, function () { return barra(); }) + "</p>";
     }).join("");
+    poemBody.classList.toggle("scrollabile", righe.length > 8);
   }
   function componi() {
     paroleOnline(function (online) {
