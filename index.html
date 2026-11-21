@@ -41,7 +41,7 @@
 
   .kicker { font-family: Arial, Helvetica, sans-serif; font-size: 0.72rem; letter-spacing: 4px; color: #c99a5e; margin-bottom: 18px; }
   h1 { font-size: clamp(1.8rem, 6vw, 3rem); letter-spacing: 6px; font-weight: 400; margin: 0 0 0.4em; }
-  .q { font-size: clamp(1.35rem, 4vw, 2rem); line-height: 1.4; margin: 0 0 1.6rem; max-width: 20ch; }
+  .q { font-size: clamp(1.35rem, 4vw, 2rem); line-height: 1.4; margin: 0 auto 1.6rem; max-width: 20ch; }
   p { margin: 0 0 1em; color: #ddcfb8; max-width: 42ch; }
   .small { font-size: 0.92rem; color: #b9a98e; }
   em { color: #e8b34e; font-style: italic; }
@@ -160,7 +160,7 @@
   /* componimento collettivo (caviardage) */
   .poem { max-width: 540px; margin: 1.6rem auto 0; text-align: center; font-style: italic; line-height: 2.1; color: #f2e3c8; font-size: 1.08rem; }
   .poem.scrollabile { max-height: 56vh; overflow-y: auto; padding: 0 1rem; -webkit-overflow-scrolling: touch; }
-  .poem .pline { margin: 0.3em 0; }
+  .poem .pline { margin: 0.3em 0; text-wrap: balance; }
   .poem .stanza { margin: 0 0 1.2em; }
   .poem .stanza:last-child { margin-bottom: 0; }
   .poem .rit { color: #c99a5e; font-size: 0.92rem; letter-spacing: 1px; }
@@ -236,11 +236,13 @@
 <section class="step hidden" id="t5">
   <p class="count">5 · 7</p>
   <p class="q">Intravedi il percorso.</p>
-  <p>Questo è il <strong>trailer</strong> del percorso che facciamo dentro la Biblioteca Dionisio Roberti di Sansepolcro. Il resto si vive in biblioteca.</p>
+  <p>Questo è il <strong>trailer</strong> del percorso che facciamo dentro la Biblioteca Dionisio Roberti di Sansepolcro.</p>
   <div class="video-slot" style="margin-top:1.2rem;">
-    <iframe src="https://www.youtube.com/embed/pJSECAi5aqc" title="Trailer Bibliomanzia" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="border:0;"></iframe>
+    <video controls preload="metadata" playsinline style="width:100%;height:100%;object-fit:contain;background:#000;border-radius:inherit;">
+      <source src="trailer-bibliomanzia-2.mp4" type="video/mp4">
+    </video>
   </div>
-  <p class="small" style="margin-top:.6rem;">Se il video non parte, <a href="trailer-bibliomanzia.mp4" target="_blank" rel="noopener" style="color:#e8b34e;">aprilo da qui</a>.</p>
+  <p class="small" style="margin-top:.6rem;">Se il video non parte, <a href="https://www.youtube.com/shorts/C4iyiAjC2LI" target="_blank" rel="noopener" style="color:#e8b34e;">lo guardi su YouTube</a> e poi torni qui.</p>
   <p class="q" style="margin-top:1.8rem;font-size:clamp(1.2rem,3.4vw,1.7rem);">…e il resto si scopre <em>in biblioteca</em>.</p>
   <div class="choices" style="margin-top:1.2rem;">
     <button class="choice" data-next="t6">Continua →</button>
@@ -693,9 +695,11 @@
     }).catch(function () {});
   }
   function paroleOnline(fatto) {
-    fetch(SB_URL + "/rest/v1/parole?select=parola&order=id.asc&limit=150", { headers: { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY } })
+    /* solo le parole degli ultimi 7 giorni, le più recenti prima (max 18) */
+    var da = new Date(Date.now() - 7 * 86400000).toISOString();
+    fetch(SB_URL + "/rest/v1/parole?select=parola&creato_il=gte." + encodeURIComponent(da) + "&order=id.desc&limit=18", { headers: { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY } })
       .then(function (r) { return r.ok ? r.json() : []; })
-      .then(function (righe) { fatto(righe.map(function (x) { return x.parola; })); })
+      .then(function (righe) { fatto(righe.map(function (x) { return x.parola; }).reverse()); })
       .catch(function () { fatto([]); });
   }
   var parolaLibro = document.getElementById("parola-libro");
@@ -703,6 +707,9 @@
   document.getElementById("condividi").addEventListener("click", function () {
     var w = parolaInput.value.trim();
     if (!w) { parolaInput.focus(); return; }
+    var btn = document.getElementById("condividi");
+    if (btn.disabled) { return; }
+    btn.disabled = true;
     raccolte.push(w);
     salvaParole();
     salvaOnline(w);
@@ -721,6 +728,9 @@
   document.getElementById("condividi-libro").addEventListener("click", function () {
     var w = parolaLibro.value.trim();
     if (!w) { parolaLibro.focus(); return; }
+    var btn = document.getElementById("condividi-libro");
+    if (btn.disabled) { return; }
+    btn.disabled = true;
     raccolte.push(w);
     salvaParole();
     salvaOnline(w);
@@ -754,6 +764,9 @@
       var k = t.toLowerCase();
       if (!viste[k]) { viste[k] = true; tutte.push(t); }
     });
+    /* componimento breve: al massimo 18 parole, le più recenti, in ordine di arrivo */
+    var MAX = 18;
+    if (tutte.length > MAX) { tutte = tutte.slice(tutte.length - MAX); }
     /* componimento poetico narrativo: una storia in terzine, con le parole condivise come materia del racconto. Schemi fissi e in ordine, così il testo è identico per tutti */
     var RIT = "<span class='rit'>E la biblioteca custodisce tutto.</span>";
     var SCHEMI = [
@@ -778,6 +791,7 @@
                    "chiusa nel pugno.",
                    "Ha aperto un libro: " + Q(tutte[0]) + ".",
                    "E la biblioteca ha cominciato a raccontare."]);
+      stanze.push([RIT]);
     } else if (tutte.length === 2) {
       stanze.push(["Qualcuno è entrato con una domanda",
                    "chiusa nel pugno.",
@@ -785,6 +799,7 @@
       stanze.push(["Poi " + Q(tutte[1]) + ":",
                    "due tappe di uno stesso viaggio,",
                    "e la domanda già meno pesante."]);
+      stanze.push([RIT]);
     } else if (tutte.length === 3) {
       stanze.push(["Qualcuno è entrato con una domanda",
                    "chiusa nel pugno.",
@@ -792,6 +807,7 @@
       stanze.push([Q(tutte[1]) + ", e poi " + Q(tutte[2]) + ":",
                    "un piccolo racconto in tre atti,",
                    "la prima pagina di un libro che non c'era."]);
+      stanze.push([RIT]);
     } else {
       stanze.push(["Qualcuno è entrato con una domanda",
                    "chiusa nel pugno,",
