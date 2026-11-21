@@ -24,12 +24,21 @@
   .wrap { max-width: 780px; margin: 0 auto; padding: 0 18px; }
 
   /* tappe a schermo pieno */
-  .step {
-    min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column;
+  .step {    min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column;
     align-items: center; justify-content: center; text-align: center;
     padding: 60px 20px; animation: fade .6s ease-out;
   }
   @keyframes fade { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+  /* ── navigazione: barra di progresso, indietro, transizioni ── */
+  #progressa { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(232,179,78,.12); z-index: 60; }
+  #progressa i { display: block; height: 100%; width: 0; background: #e8b34e; transition: width .7s ease; }
+  #torna { position: fixed; top: 12px; left: 12px; z-index: 60; display: none; width: 40px; height: 40px;
+    border-radius: 50%; border: 1px solid #8a5a22; background: rgba(36,22,8,.8); color: #e8b34e;
+    font-size: 1.15rem; cursor: pointer; line-height: 1; }
+  #torna:active { transform: scale(.94); }
+  .step:not(.hidden), .fly:not(.hidden) { animation: fade .6s ease-out; }
+
   .kicker { font-family: Arial, Helvetica, sans-serif; font-size: 0.72rem; letter-spacing: 4px; color: #c99a5e; margin-bottom: 18px; }
   h1 { font-size: clamp(1.8rem, 6vw, 3rem); letter-spacing: 6px; font-weight: 400; margin: 0 0 0.4em; }
   .q { font-size: clamp(1.35rem, 4vw, 2rem); line-height: 1.4; margin: 0 0 1.6rem; max-width: 20ch; }
@@ -152,18 +161,34 @@
   .poem { max-width: 540px; margin: 1.6rem auto 0; text-align: center; font-style: italic; line-height: 2.1; color: #f2e3c8; font-size: 1.08rem; }
   .poem.scrollabile { max-height: 56vh; overflow-y: auto; padding: 0 1rem; -webkit-overflow-scrolling: touch; }
   .poem .pline { margin: 0.3em 0; }
+  .poem .stanza { margin: 0 0 1.2em; }
+  .poem .stanza:last-child { margin-bottom: 0; }
+  .poem .rit { color: #c99a5e; font-size: 0.92rem; letter-spacing: 1px; }
   .poem .wq { color: #e8b34e; }
+  .poem .wq.mia { color: #ffd97a; text-shadow: 0 0 14px rgba(232,179,78,.6); border-bottom: 1px solid #e8b34e; }
+  .poem .stanza { opacity: 0; animation: sorge .9s ease forwards; }
+  @keyframes sorge { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .poem .stanza { animation: none; opacity: 1; } }
+  /* attesa viva: il componimento si scrive in caviardage */
+  .scrive .b { opacity: 0; transform: scaleX(0); transform-origin: left; animation: barSorge .55s ease forwards; }
+  @keyframes barSorge { to { opacity: 1; transform: scaleX(1); } }
+  .scrive-p { opacity: .4; animation: pulsa 1.8s ease-in-out infinite; }
+  @keyframes pulsa { 0%, 100% { opacity: .3; } 50% { opacity: .75; } }
+  .dots::after { content: ""; display: inline-block; width: 3ch; text-align: left; animation: puntini 1.4s steps(1) infinite; }
+  @keyframes puntini { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
   .poem .b { display: inline-block; background: #000; border: 1px solid #8a5a22; border-radius: 3px; height: 0.85em; vertical-align: middle; margin: 0 3px; }
 </style>
 <meta name="ai-disclosure" content="ai-autonomous" ai-model="GLM-5.3-Flash" ai-provider="Thaura"><meta name="generator" content="Thaura (GLM-5.3-Flash)"></head>
 <body>
+<div id="progressa" aria-hidden="true"><i></i></div>
+<button id="torna" type="button" aria-label="Torna alla tappa precedente">←</button>
 
 <!-- ══════════ TAPPA 1 ══════════ -->
 <section class="step" id="t1">
   <h1 style="font-size:clamp(2.6rem,11vw,5rem);letter-spacing:10px;margin-bottom:0.2em;">BIBLIOMANZIA</h1>
   <p class="q">Un percorso sonoro interattivo per biblioteche.</p>
   <p>In un mondo che risponde subito a tutto, Bibliomanzia restituisce <em>il tempo della domanda</em>: una biblioteca, un libro, un silenzio e una traccia da lasciare.</p>
-  <p class="small">Il percorso dura <strong>20/25 minuti</strong>.</p>
+  <p class="small">In biblioteca, il percorso dura <strong>20/25 minuti</strong>. Questo percorso online è un assaggio: <strong>5 minuti</strong>, e sei già dentro.</p>
   <div class="choices" style="margin-top:1.4rem;">
     <button class="choice" data-next="t2">Continua →</button>
   </div>
@@ -397,10 +422,26 @@
 
   /* ── LE TAPPE ── */
   var tappe = ["t1","t2","t3","t4","t5","t6","t7"];
+  /* ── NAVIGAZIONE: progresso e indietro ── */
+  var progresso = { "t1":7, "t2":15, "t3":23, "t4":31, "t5":40, "t6":48, "t7":56,
+                    "s-libro":66, "scaffale":66, "s-fly":74, "s-read":78, "s-share":82,
+                    "s-wall":86, "wall-private":88, "s-poem":93, "s-grazie":100 };
+  function aggiornaNav(id) {
+    var v = progresso[id];
+    if (v != null) { document.querySelector("#progressa i").style.width = v + "%"; }
+    var t = tappe.indexOf(id);
+    document.getElementById("torna").style.display = (t > 0) ? "block" : "none";
+  }
+  document.getElementById("torna").addEventListener("click", function () {
+    var cur = tappe.filter(function (t) { return !document.getElementById(t).classList.contains("hidden"); })[0];
+    var i = tappe.indexOf(cur);
+    if (i > 0) { vaiA(tappe[i - 1]); }
+  });
   function vaiA(id) {
     tappe.forEach(function (t) { document.getElementById(t).classList.add("hidden"); });
     var el = document.getElementById(id);
     el.classList.remove("hidden");
+    aggiornaNav(id);
     window.scrollTo({ top: 0 });
   }
   document.querySelectorAll("[data-next]").forEach(function (b) {
@@ -413,20 +454,30 @@
     nascondiTappe();
     document.getElementById("parola-libro").value = "";
     document.getElementById("s-libro").classList.remove("hidden");
+    aggiornaNav("s-libro");
     window.scrollTo({ top: 0 });
+    setTimeout(function () { document.getElementById("parola-libro").focus(); }, 350);
   });
   document.getElementById("scelta-shelf").addEventListener("click", function () {
     nascondiTappe();
     document.getElementById("scaffale").classList.remove("hidden");
+    aggiornaNav("scaffale");
     window.scrollTo({ top: 0 });
+  });
+  /* Invio conferma la parola, nei due percorsi */
+  document.getElementById("parola-libro").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); document.getElementById("condividi-libro").click(); }
+  });
+  document.getElementById("parola").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); document.getElementById("condividi").click(); }
   });
 
   /* ── I LIBRI SULLO SCAFFALE (citazioni vere) ── */
   var LIBRI = [
     { titolo: "Le città invisibili", autore: "Italo Calvino", colore: "#2f6b5e", citazioni: [
-      "L'occhio non vede cose ma figure di cose che significano altre cose.",
+      "L'occhio non vede le cose ma le figure di cose che significano altre cose.",
       "Ogni vita è un'enciclopedia, una biblioteca, un inventario di oggetti, un campionario di stili.",
-      "La fantasia è un posto dove ci piove dentro." ] },
+      "L'inferno dei viventi non è qualcosa che sarà; se esiste, è quello che è già qui." ] },
     { titolo: "La Divina Commedia", autore: "Dante Alighieri", colore: "#6b3a2a", citazioni: [
       "Nel mezzo del cammin di nostra vita mi ritrovai per una selva oscura, ché la diritta via era smarrita.",
       "Non ragioniam di lor, ma guarda e passa.",
@@ -444,14 +495,17 @@
       "Cosimo Piovasco di Rondò — Visse sugli alberi — Amò sempre la terra — Salì in cielo." ] },
     { titolo: "Se una notte d'inverno un viaggiatore", autore: "Italo Calvino", colore: "#2f6b5e", citazioni: [
       "Tu sai che il meglio che ci si può aspettare è di evitare il peggio.",
-      "Si legge da soli, anche quando si è in due." ] },
+      "Si legge da soli, anche quando si è in due.",
+      "Nella lettura avviene qualcosa su cui non ho potere.",
+      "Le vite degli individui della specie umana formano un intreccio continuo." ] },
     { titolo: "Cent'anni di solitudine", autore: "Gabriel García Márquez", colore: "#a3763a", citazioni: [
       "Molti anni dopo, di fronte al plotone di esecuzione, il colonnello Aureliano Buendía si sarebbe ricordato di quel remoto pomeriggio in cui suo padre lo condusse a conoscere il ghiaccio.",
       "Il mondo era così recente, che molte cose mancavano di nome, e per nominarle bisognava indicarle con il dito.",
       "Non si muore quando si deve, ma quando si può.",
       "Un minuto di riconciliazione vale più di un'intera vita di amicizia." ] },
     { titolo: "Orgoglio e pregiudizio", autore: "Jane Austen", colore: "#8e5a6b", citazioni: [
-      "È verità universalmente riconosciuta che un uomo celibe, in possesso di una bella fortuna, abbia bisogno di una moglie." ] },
+      "È verità universalmente riconosciuta che un uomo celibe, in possesso di una bella fortuna, abbia bisogno di una moglie.",
+      "Ricordate del passato solo ciò che vi fa piacere." ] },
     { titolo: "Il piccolo principe", autore: "A. de Saint-Exupéry", colore: "#3a6b8a", citazioni: [
       "Ecco il mio segreto. È molto semplice: non si vede bene che col cuore. L'essenziale è invisibile agli occhi.",
       "Solo i bambini sanno quello che cercano.",
@@ -461,7 +515,8 @@
       "Farà in tempo, Drogo, a vederla, o dovrà andarsene prima?",
       "Un nodo stringeva il cuore di Drogo; addio sogni del tempo lontano." ] },
     { titolo: "Canzoniere", autore: "Francesco Petrarca", colore: "#6b5a2a", citazioni: [
-      "Solo et pensoso i più deserti campi vo mesurando a passi tardi e lenti." ] },
+      "Solo et pensoso i più deserti campi vo mesurando a passi tardi e lenti.",
+      "E temo, et spero; et ardo, et son un ghiaccio." ] },
     { titolo: "La casa degli spiriti", autore: "Isabel Allende", colore: "#4a2f4f", citazioni: [
       "Barrabás arrivò in famiglia per via mare, annotò la piccola Clara con la sua delicata calligrafia.",
       "Clara abitava un universo inventato da lei, protetta dalle avversità della vita, dove la verità prosaica delle cose materiali si confondeva con la verità tumultuosa dei sogni.",
@@ -476,8 +531,7 @@
       "Abbiate paura: io sono senza paura, e quindi potente.",
       "Nulla è così doloroso per la mente umana come un grande e improvviso cambiamento.",
       "Dopo giorni e notti di un lavoro e di una fatica incredibili, riuscii a scoprire la causa della generazione e della vita.",
-      "L'invenzione non è una creazione dal nulla, bensì dal caos.",
-      "L'inizio è sempre oggi." ] },
+      "L'invenzione non è una creazione dal nulla, bensì dal caos." ] },
     { titolo: "Poesie", autore: "Emily Dickinson", colore: "#8a5a6b", citazioni: [
       "La «speranza» è la pennuta creatura — che si posa nell'anima — e canta melodie senza parole — e non smette mai — proprio mai —",
       "Io non sono Nessuno! Chi sei tu? Sei — Nessuno — anche tu? Allora siamo in due! Non dirlo! spargerebbero la voce — lo sai!",
@@ -493,8 +547,7 @@
       "Questi tre tempi sono nella mia anima e non li vedo altrove." ] },
     { titolo: "Margherita Dolcevita", autore: "Stefano Benni", colore: "#b04a7a", citazioni: [
       "I sogni sono come le bolle di sapone: nascono, volano, scoppiano. Ma non si può fare a meno di soffiarli.",
-      "Se i grandi non si sono ribellati, lo faremo noi. La storia ci guarda e non vorrei che vomitasse.",
-      "Ringrazia, ricambia, sorridi." ] },
+      "Se i grandi non si sono ribellati, lo faremo noi. La storia ci guarda e non vorrei che vomitasse." ] },
     { titolo: "La solitudine dei numeri primi", autore: "Paolo Giordano", colore: "#4a6b8a", citazioni: [
       "Mattia pensava che lui e Alice erano così, due primi gemelli, soli e perduti, vicini ma non abbastanza vicini da toccarsi davvero.",
       "Le scelte si fanno in pochi secondi e si scontano per il tempo restante.",
@@ -571,6 +624,8 @@
     [sFly, sRead, sShare, sWall, sGrazie, sPoem].forEach(function (s) { s.classList.add("hidden"); });
     sLibro.classList.add("hidden");
     el.classList.remove("hidden");
+    aggiornaNav(el.id);
+    window.scrollTo({ top: 0 });
   }
   function mostraScaffale() {
     [sFly, sRead, sShare, sWall, sGrazie, sPoem].forEach(function (s) { s.classList.add("hidden"); });
@@ -685,8 +740,12 @@
   function barra() {
     return "<span class='b' style='width:" + (34 + Math.floor(Math.random() * 80)) + "px'></span>";
   }
-  function W(w) { return "<span class='wq'>“" + esc(w) + "”</span>"; }
-  function componiCon(elenco) {
+  function W(w, mia) { return "<span class='wq" + (mia ? " mia" : "") + "'>“" + esc(w) + "”</span>"; }
+  function componiCon(elenco, mie) {
+    mie = mie || [];
+    var mieSet = {};
+    mie.forEach(function (x) { if (x) { mieSet[String(x).trim().toLowerCase()] = true; } });
+    function Q(w) { return W(w, mieSet[String(w).trim().toLowerCase()]); }
     var viste = {};
     var tutte = [];
     elenco.forEach(function (x) {
@@ -695,62 +754,103 @@
       var k = t.toLowerCase();
       if (!viste[k]) { viste[k] = true; tutte.push(t); }
     });
-    /* schemi fissi e in ordine: così il componimento è identico per tutti */
-    var righe = [];
-    if (tutte.length === 1) {
-      righe.push("e la tua è la prima: " + W(tutte[0]) + ".");
-      righe.push("Una parola sola, e già qualcosa che resta:");
+    /* componimento poetico narrativo: una storia in terzine, con le parole condivise come materia del racconto. Schemi fissi e in ordine, così il testo è identico per tutti */
+    var RIT = "<span class='rit'>E la biblioteca custodisce tutto.</span>";
+    var SCHEMI = [
+      { n: 1, f: function (q) { return ["Ha aperto un libro a caso:", Q(q[0]), "è saltata fuori dalla pagina, viva."]; } },
+      { n: 2, f: function (q) { return ["Ha camminato tra gli scaffali di " + Q(q[0]) + ",", "e oltre la porta c'era " + Q(q[1]) + ".", "Nessuna delle due era un caso."]; } },
+      { n: 1, f: function (q) { return [Q(q[0]) + " le ha fatto da guida,", "una parola-bussola", "che punta verso le ultime pagine."]; } },
+      { n: 2, f: function (q) { return ["In fondo al corridoio, " + Q(q[0]) + ";", "sulla soglia, " + Q(q[1]) + ",", "come un biglietto lasciato lì apposta."]; } },
+      { n: 1, f: function (q) { return ["Poi la luce si è fatta " + Q(q[0]) + ",", "e la biblioteca è diventata foresta,", "di alberi che erano libri."]; } },
+      { n: 2, f: function (q) { return ["Ha attraversato " + Q(q[0]) + ",", "e ha incontrato " + Q(q[1]) + ",", "che aspettava da anni di essere letta."]; } },
+      { n: 3, f: function (q) { return [Q(q[0]) + ", " + Q(q[1]) + ", " + Q(q[2]) + ":", "tre pietre bianche", "per ritrovare la strada di casa."]; } },
+      { n: 1, f: function (q) { return ["Ad ogni svolta, " + Q(q[0]) + ",", "come se il libro", "avesse imparato il suo nome."]; } },
+      { n: 2, f: function (q) { return ["E quando ha pensato di essere persa,", Q(q[0]) + ", poi " + Q(q[1]) + ":", "due mani che la tirano su."]; } },
+      { n: 1, f: function (q) { return ["Alla fine del percorso, " + Q(q[0]) + ",", "ed era la risposta,", "anche se non somigliava a una risposta."]; } }
+    ];
+    var stanze = [];
+    if (tutte.length === 0) {
+      stanze.push(["Il componimento aspetta:",
+                   "la prima parola",
+                   "è ancora nel silenzio."]);
+    } else if (tutte.length === 1) {
+      stanze.push(["Qualcuno è entrato con una domanda",
+                   "chiusa nel pugno.",
+                   "Ha aperto un libro: " + Q(tutte[0]) + ".",
+                   "E la biblioteca ha cominciato a raccontare."]);
     } else if (tutte.length === 2) {
-      righe.push(W(tutte[0]) + ", e poi " + W(tutte[1]) + ".");
+      stanze.push(["Qualcuno è entrato con una domanda",
+                   "chiusa nel pugno.",
+                   "Ha aperto un libro: " + Q(tutte[0]) + "."]);
+      stanze.push(["Poi " + Q(tutte[1]) + ":",
+                   "due tappe di uno stesso viaggio,",
+                   "e la domanda già meno pesante."]);
     } else if (tutte.length === 3) {
-      righe.push(W(tutte[0]) + ", " + W(tutte[1]) + ", e " + W(tutte[2]) + ".");
+      stanze.push(["Qualcuno è entrato con una domanda",
+                   "chiusa nel pugno.",
+                   "Ha aperto un libro: " + Q(tutte[0]) + "."]);
+      stanze.push([Q(tutte[1]) + ", e poi " + Q(tutte[2]) + ":",
+                   "un piccolo racconto in tre atti,",
+                   "la prima pagina di un libro che non c'era."]);
     } else {
-      var schemi = [
-        [1, function (q) { return "C'è chi ha letto " + W(q[0]) + ","; }],
-        [2, function (q) { return "chi ha sussurrato " + W(q[0]) + " e " + W(q[1]) + ";"; }],
-        [3, function (q) { return W(q[0]) + ", " + W(q[1]) + ", " + W(q[2]) + ":"; }],
-        [1, function (q) { return "e sotto tutto, " + W(q[0]) + "."; }],
-        [2, function (q) { return "Qualcuno ha cercato " + W(q[0]) + ", e ha trovato " + W(q[1]) + "."; }],
-        [1, function (q) { return "La domanda aspettava: " + W(q[0]) + "."; }],
-        [2, function (q) { return W(q[0]) + ", poi " + W(q[1]) + " —"; }],
-        [1, function (q) { return "e ancora " + W(q[0]) + ","; }]
-      ];
+      stanze.push(["Qualcuno è entrato con una domanda",
+                   "chiusa nel pugno,",
+                   "e una biblioteca tutta intorno."]);
       var p = 0;
       var i = 0;
-      while (p < tutte.length) {
-        var rest = tutte.length - p;
-        if (rest <= 3) {
-          var ultime = tutte.slice(p);
-          if (ultime.length === 1) {
-            righe.push("e infine, " + W(ultime[0]) + ".");
-          } else if (ultime.length === 2) {
-            righe.push("e infine, " + W(ultime[0]) + " e " + W(ultime[1]) + ".");
-          } else {
-            righe.push(W(ultime[0]) + ", " + W(ultime[1]) + ", e infine " + W(ultime[2]) + ".");
-          }
-          p = tutte.length;
-        } else {
-          var s = schemi[i % schemi.length];
-          righe.push(s[1](tutte.slice(p, p + s[0])));
-          p += s[0];
-          i++;
-        }
+      while (tutte.length - p > 3) {
+        var s = SCHEMI[i % SCHEMI.length];
+        stanze.push(s.f(tutte.slice(p, p + s.n)));
+        p += s.n;
+        i++;
+        if (i % 2 === 0) { stanze.push([RIT]); }
+      }
+      var ultime = tutte.slice(p);
+      if (ultime.length === 1) {
+        stanze.push(["E quando sembrava finita, " + Q(ultime[0]) + ",", "l'ultima parola,", "che non era l'ultima."]);
+      } else if (ultime.length === 2) {
+        stanze.push(["E quando sembrava finita, " + Q(ultime[0]) + " e " + Q(ultime[1]) + ",", "le ultime due tappe,", "che non erano le ultime."]);
+      } else {
+        stanze.push(["E quando sembrava finita, " + Q(ultime[0]) + ", " + Q(ultime[1]) + " e " + Q(ultime[2]) + ",", "le ultime tre tappe,", "che non erano le ultime."]);
+      }
+      stanze.push(["Alla fine, la domanda non c'era più:",
+                   "al suo posto, un componimento,",
+                   "scritto da chi è passato di qui.",
+                   RIT]);
+    }
+    /* la strofa della persona: la sua parola, garantita dentro il componimento */
+    if (mie.length > 0) {
+      var mia = String(mie[mie.length - 1]).trim();
+      if (mia) {
+        stanze.push(["E la tua parola è qui, dentro:", Q(mia) + ",", "una voce tra le voci: la tua."]);
       }
     }
-    if (tutte.length > 1) {
-      righe.push("Da tante mani diverse, un'unica pagina:");
-    }
-    righe.push("la storia più vera è quella che abbiamo scritto insieme.");
-    poemBody.innerHTML = righe.map(function (r) {
-      return "<p class='pline'>" + r + "</p>";
+    var totRighe = 0;
+    poemBody.innerHTML = stanze.map(function (st, idx) {
+      totRighe += st.length;
+      return "<div class='stanza' style='animation-delay:" + (idx * 0.45) + "s'>" + st.map(function (r) {
+        return "<p class='pline'>" + r + "</p>";
+      }).join("") + "</div>";
     }).join("");
-    poemBody.classList.toggle("scrollabile", righe.length > 8);
+    poemBody.classList.toggle("scrollabile", totRighe > 10);
   }
   function componi() {
-    paroleOnline(function (online) {
-      componiCon(online.concat(raccolte));
-      mostra(sPoem);
-    });
+    mostra(sPoem);
+    poemBody.innerHTML = "<div class='scrive'>" +
+      "<p class='pline scrive-p'>la biblioteca sta scrivendo<span class='dots'></span></p>" +
+      "<p class='pline'><span class='b' style='width:118px;animation-delay:.15s'></span> <span class='b' style='width:64px;animation-delay:.45s'></span> <span class='b' style='width:92px;animation-delay:.75s'></span></p>" +
+      "<p class='pline'><span class='b' style='width:76px;animation-delay:1.05s'></span> <span class='b' style='width:134px;animation-delay:1.35s'></span></p>" +
+      "<p class='pline'><span class='b' style='width:104px;animation-delay:1.65s'></span> <span class='b' style='width:58px;animation-delay:1.95s'></span></p>" +
+      "</div>";
+    var fatto = false;
+    function finisci(online) {
+      if (fatto) { return; }
+      fatto = true;
+      componiCon(online.concat(raccolte), raccolte.slice());
+    }
+    paroleOnline(function (online) { finisci(online); });
+    /* se la rete è lenta, dopo 5 secondi si compone con le parole già raccolte */
+    setTimeout(function () { finisci([]); }, 5000);
   }
   function vaiAlPoema() {
     componi();
