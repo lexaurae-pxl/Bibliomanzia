@@ -239,7 +239,7 @@
   <p>Questo è il <strong>trailer</strong> del percorso che facciamo dentro la Biblioteca Dionisio Roberti di Sansepolcro.</p>
   <div class="video-slot" style="margin-top:1.2rem;">
     <video controls preload="metadata" playsinline style="width:100%;height:100%;object-fit:contain;background:#000;border-radius:inherit;">
-      <source src="trailer-bibliomanzia-2.mp4" type="video/mp4">
+      <source src="trailer-bibliomanzia.mp4" type="video/mp4">
     </video>
   </div>
   <p class="small" style="margin-top:.6rem;">Se il video non parte, <a href="https://www.youtube.com/shorts/C4iyiAjC2LI" target="_blank" rel="noopener" style="color:#e8b34e;">lo guardi su YouTube</a> e poi torni qui.</p>
@@ -292,7 +292,7 @@
   <div class="wrap" style="text-align:center;">
     <p class="kicker">LO SCAFFALE</p>
     <p class="q" style="max-width:none;">Quale libro ti sta chiamando?</p>
-    <p class="small">Tocca un libro, poi <strong>tieni premuto</strong> per aprirlo: lascia quando senti che è il momento.</p>
+    <p class="small">Scegli un libro.</p>
   </div>
   <div class="shelf-wrap" id="shelf"></div>
 </div>
@@ -325,6 +325,7 @@
 <div class="fly hidden" id="s-fly">
   <div class="fly-inner">
     <p class="prompt" id="prompt-closed">pensa alla tua domanda — poi apri il libro</p>
+    <p class="small" style="margin-top:.8rem;">Per sfogliare, <strong>tieni premuto</strong> e lascia quando ti senti di lasciare, per trovare la tua pagina.</p>
     <button class="closed-book" id="openBtn" type="button" aria-label="Apri il libro">
       <svg viewBox="0 0 260 200" role="img" aria-label="Libro chiuso">
         <rect x="20" y="30" width="220" height="150" rx="8" fill="#4a2f18" stroke="#2b1a0c" stroke-width="3"/>
@@ -764,82 +765,68 @@
       var k = t.toLowerCase();
       if (!viste[k]) { viste[k] = true; tutte.push(t); }
     });
-    /* componimento breve: al massimo 18 parole, le più recenti, in ordine di arrivo */
-    var MAX = 18;
-    if (tutte.length > MAX) { tutte = tutte.slice(tutte.length - MAX); }
-    /* componimento poetico narrativo: una storia in terzine, con le parole condivise come materia del racconto. Schemi fissi e in ordine, così il testo è identico per tutti */
+    /* parole degli altri: quelle del database, tranne quelle scritte in questa sessione */
+    var altri = tutte.filter(function (w) { return !mieSet[w.toLowerCase()]; });
+    var DEFAULTI = ["silenzio", "soglia", "attesa", "radice"];
+    function pesca(pool, n) {
+      var p = pool.slice(), out = [];
+      while (out.length < n && p.length > 0) {
+        out.push(p.splice(Math.floor(Math.random() * p.length), 1)[0]);
+      }
+      return out;
+    }
     var RIT = "<span class='rit'>E la biblioteca custodisce tutto.</span>";
-    var SCHEMI = [
-      { n: 1, f: function (q) { return ["Ha aperto un libro a caso:", Q(q[0]), "è saltata fuori dalla pagina, viva."]; } },
-      { n: 2, f: function (q) { return ["Ha camminato tra gli scaffali di " + Q(q[0]) + ",", "e oltre la porta c'era " + Q(q[1]) + ".", "Nessuna delle due era un caso."]; } },
-      { n: 1, f: function (q) { return [Q(q[0]) + " le ha fatto da guida,", "una parola-bussola", "che punta verso le ultime pagine."]; } },
-      { n: 2, f: function (q) { return ["In fondo al corridoio, " + Q(q[0]) + ";", "sulla soglia, " + Q(q[1]) + ",", "come un biglietto lasciato lì apposta."]; } },
-      { n: 1, f: function (q) { return ["Poi la luce si è fatta " + Q(q[0]) + ",", "e la biblioteca è diventata foresta,", "di alberi che erano libri."]; } },
-      { n: 2, f: function (q) { return ["Ha attraversato " + Q(q[0]) + ",", "e ha incontrato " + Q(q[1]) + ",", "che aspettava da anni di essere letta."]; } },
-      { n: 3, f: function (q) { return [Q(q[0]) + ", " + Q(q[1]) + ", " + Q(q[2]) + ":", "tre pietre bianche", "per ritrovare la strada di casa."]; } },
-      { n: 1, f: function (q) { return ["Ad ogni svolta, " + Q(q[0]) + ",", "come se il libro", "avesse imparato il suo nome."]; } },
-      { n: 2, f: function (q) { return ["E quando ha pensato di essere persa,", Q(q[0]) + ", poi " + Q(q[1]) + ":", "due mani che la tirano su."]; } },
-      { n: 1, f: function (q) { return ["Alla fine del percorso, " + Q(q[0]) + ",", "ed era la risposta,", "anche se non somigliava a una risposta."]; } }
-    ];
     var stanze = [];
-    if (tutte.length === 0) {
+    if (altri.length === 0 && Object.keys(mieSet).length === 0) {
       stanze.push(["Il componimento aspetta:",
                    "la prima parola",
                    "è ancora nel silenzio."]);
-    } else if (tutte.length === 1) {
-      stanze.push(["Qualcuno è entrato con una domanda",
-                   "chiusa nel pugno.",
-                   "Ha aperto un libro: " + Q(tutte[0]) + ".",
-                   "E la biblioteca ha cominciato a raccontare."]);
-      stanze.push([RIT]);
-    } else if (tutte.length === 2) {
-      stanze.push(["Qualcuno è entrato con una domanda",
-                   "chiusa nel pugno.",
-                   "Ha aperto un libro: " + Q(tutte[0]) + "."]);
-      stanze.push(["Poi " + Q(tutte[1]) + ":",
-                   "due tappe di uno stesso viaggio,",
-                   "e la domanda già meno pesante."]);
-      stanze.push([RIT]);
-    } else if (tutte.length === 3) {
-      stanze.push(["Qualcuno è entrato con una domanda",
-                   "chiusa nel pugno.",
-                   "Ha aperto un libro: " + Q(tutte[0]) + "."]);
-      stanze.push([Q(tutte[1]) + ", e poi " + Q(tutte[2]) + ":",
-                   "un piccolo racconto in tre atti,",
-                   "la prima pagina di un libro che non c'era."]);
       stanze.push([RIT]);
     } else {
-      stanze.push(["Qualcuno è entrato con una domanda",
-                   "chiusa nel pugno,",
-                   "e una biblioteca tutta intorno."]);
-      var p = 0;
-      var i = 0;
-      while (tutte.length - p > 3) {
-        var s = SCHEMI[i % SCHEMI.length];
-        stanze.push(s.f(tutte.slice(p, p + s.n)));
-        p += s.n;
-        i++;
-        if (i % 2 === 0) { stanze.push([RIT]); }
+      /* 3 o 4 parole degli altri, pescate a caso; se nel database non ce ne sono abbastanza,
+         si completano con parole di default così la strofa resta intera */
+      var quanti = (altri.length >= 4 && Math.random() < 0.5) ? 4 : 3;
+      var scelte = pesca(altri, quanti);
+      var d = 0;
+      while (scelte.length < 3) {
+        var cand = DEFAULTI[d++ % DEFAULTI.length];
+        var gia = scelte.some(function (s) { return s.toLowerCase() === cand; });
+        if (!gia || d > 8) { scelte.push(cand); }
       }
-      var ultime = tutte.slice(p);
-      if (ultime.length === 1) {
-        stanze.push(["E quando sembrava finita, " + Q(ultime[0]) + ",", "l'ultima parola,", "che non era l'ultima."]);
-      } else if (ultime.length === 2) {
-        stanze.push(["E quando sembrava finita, " + Q(ultime[0]) + " e " + Q(ultime[1]) + ",", "le ultime due tappe,", "che non erano le ultime."]);
-      } else {
-        stanze.push(["E quando sembrava finita, " + Q(ultime[0]) + ", " + Q(ultime[1]) + " e " + Q(ultime[2]) + ",", "le ultime tre tappe,", "che non erano le ultime."]);
+      /* la parola scritta in questa sessione c'è sempre, mescolata con le altre */
+      var mia = "";
+      for (var j = mie.length - 1; j >= 0; j--) {
+        if (String(mie[j] || "").trim()) { mia = String(mie[j]).trim(); break; }
       }
-      stanze.push(["Alla fine, la domanda non c'era più:",
-                   "al suo posto, un componimento,",
-                   "scritto da chi è passato di qui.",
-                   RIT]);
-    }
-    /* la strofa della persona: la sua parola, garantita dentro il componimento */
-    if (mie.length > 0) {
-      var mia = String(mie[mie.length - 1]).trim();
-      if (mia) {
-        stanze.push(["E la tua parola è qui, dentro:", Q(mia) + ",", "una voce tra le voci: la tua."]);
+      var parole = (mia ? [mia] : []).concat(scelte);
+      d = 0;
+      while (parole.length < 4) {
+        var cand2 = DEFAULTI[d++ % DEFAULTI.length];
+        var gia2 = parole.some(function (s) { return s.toLowerCase() === cand2; });
+        if (!gia2 || d > 8) { parole.push(cand2); }
       }
+      /* mescolate: la parola personale cade ogni volta in una posizione diversa */
+      parole.sort(function () { return Math.random() - 0.5; });
+      /* schemi brevi e suggestivi: una sola strofa di 3 versi che lega le parole */
+      var S4 = [
+        function (q) { return ["Si entra con " + Q(q[0]) + " in tasca,", "si attraversa " + Q(q[1]) + ",", "si esce con " + Q(q[2]) + " e " + Q(q[3]) + "."]; },
+        function (q) { return ["C'è una soglia fatta di " + Q(q[0]) + ",", "un corridoio che profuma di " + Q(q[1]) + ",", "e in fondo, ad aspettare, " + Q(q[2]) + " e " + Q(q[3]) + "."]; },
+        function (q) { return [Q(q[0]) + " guarda " + Q(q[1]) + ".", Q(q[2]) + " non dice nulla,", "ma tiene il posto accanto a " + Q(q[3]) + "."]; },
+        function (q) { return ["Tra le pagine: " + Q(q[0]) + ".", "Tra gli scaffali: " + Q(q[1]) + ".", "Tra noi: " + Q(q[2]) + " e " + Q(q[3]) + "."]; },
+        function (q) { return ["Un libro si apre su " + Q(q[0]) + ",", "un altro su " + Q(q[1]) + ";", "in mezzo, " + Q(q[2]) + " incontra " + Q(q[3]) + "."]; }
+      ];
+      var S5 = [
+        function (q) { return ["Si entra con " + Q(q[0]) + ",", "si attraversano " + Q(q[1]) + " e " + Q(q[2]) + ",", "si esce con " + Q(q[3]) + " e " + Q(q[4]) + "."]; },
+        function (q) { return [Q(q[0]) + " apre la porta,", Q(q[1]) + " accende la lampada,", "e " + Q(q[2]) + ", " + Q(q[3]) + " e " + Q(q[4]) + " prendono posto tra gli scaffali."]; },
+        function (q) { return ["C'è chi cerca " + Q(q[0]) + ",", "chi sogna " + Q(q[1]) + " e " + Q(q[2]) + ",", "e chi, in fondo alla sala, custodisce " + Q(q[3]) + " e " + Q(q[4]) + "."]; },
+        function (q) { return ["Tra le pagine: " + Q(q[0]) + " e " + Q(q[1]) + ".", "Tra gli scaffali: " + Q(q[2]) + ".", "Tra noi: " + Q(q[3]) + " e " + Q(q[4]) + "."]; }
+      ];
+      var con5 = parole.length >= 5;
+      var schemi = con5 ? S5 : S4;
+      var schema = schemi[Math.floor(Math.random() * schemi.length)];
+      parole = parole.slice(0, con5 ? 5 : 4);
+      stanze.push(schema(parole));
+      stanze.push([RIT]);
     }
     var totRighe = 0;
     poemBody.innerHTML = stanze.map(function (st, idx) {
