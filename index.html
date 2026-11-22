@@ -414,8 +414,8 @@
 <div class="fly hidden" id="s-poem">
   <div class="reader">
     <p class="vol">BIBLIOMANZIA</p>
-    <p class="q" style="font-size:clamp(1.2rem,3.4vw,1.7rem);">Il componimento collettivo</p>
-    <p class="small">Tutte le parole condivise si mescolano: è un caviardage, un componimento che nasce dalle pagine e da chi le ha attraversate.</p>
+    <p class="q" id="poem-titolo" style="font-size:clamp(1.2rem,3.4vw,1.7rem);">Il componimento collettivo</p>
+    <p class="small" id="poem-sotto">Tutte le parole condivise si mescolano: è un caviardage, un componimento che nasce dalle pagine e da chi le ha attraversate.</p>
     <div id="poem-body" class="poem"></div>
     <p class="thanks" style="margin-top:2rem;">Questo è un esempio di quanto le parole possano raccontare una storia, e di quanto possano entrarti dentro: insieme le abbiamo tirate fuori e abbiamo creato qualcosa di collettivo.<br>Questo è l'effetto che vogliamo per Bibliomanzia.</p>
     <div class="actions">
@@ -723,9 +723,7 @@
   });
 
   document.getElementById("tengo").addEventListener("click", function () {
-    wallShared.classList.add("hidden");
-    wallPrivate.classList.remove("hidden");
-    mostra(sWall);
+    componi("risultato");
   });
 
   document.getElementById("back1").addEventListener("click", mostraScaffale);
@@ -743,9 +741,7 @@
     componi();
   });
   document.getElementById("tengo-libro").addEventListener("click", function () {
-    wallShared.classList.add("hidden");
-    wallPrivate.classList.remove("hidden");
-    mostra(sWall);
+    componi("risultato");
   });
 
   /* il link YouTube resta l'ultima spiaggia: compare solo se il video non si carica */
@@ -879,7 +875,14 @@
     }).join("");
     poemBody.classList.toggle("scrollabile", totRighe > 10);
   }
-  function componi() {
+  function componi(variante) {
+    /* variante "risultato": per chi preferisce non condividere la parola,
+       la pagina mostra il risultato delle parole condivise dagli altri */
+    var risultato = variante === "risultato";
+    document.getElementById("poem-titolo").textContent = risultato ? "Il risultato delle parole condivise" : "Il componimento collettivo";
+    document.getElementById("poem-sotto").textContent = risultato
+      ? "Le parole condivise da chi è passato prima di te si mescolano: è un caviardage, un componimento che nasce dalle pagine e da chi le ha attraversate."
+      : "Tutte le parole condivise si mescolano: è un caviardage, un componimento che nasce dalle pagine e da chi le ha attraversate.";
     mostra(sPoem);
     poemBody.innerHTML = "<div class='scrive'>" +
       "<p class='pline scrive-p'>la biblioteca sta scrivendo<span class='dots'></span></p>" +
