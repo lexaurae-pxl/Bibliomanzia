@@ -42,7 +42,7 @@
   .kicker { font-family: Arial, Helvetica, sans-serif; font-size: 0.72rem; letter-spacing: 4px; color: #c99a5e; margin-bottom: 18px; }
   h1 { font-size: clamp(1.8rem, 6vw, 3rem); letter-spacing: 6px; font-weight: 400; margin: 0 0 0.4em; }
   .q { font-size: clamp(1.35rem, 4vw, 2rem); line-height: 1.4; margin: 0 auto 1.6rem; max-width: 20ch; }
-  p { margin: 0 0 1em; color: #ddcfb8; max-width: 42ch; }
+  p { margin: 0 auto 1em; color: #ddcfb8; max-width: 42ch; text-align: center; }
   .small { font-size: 0.92rem; color: #b9a98e; }
   em { color: #e8b34e; font-style: italic; }
 
@@ -87,7 +87,7 @@
     .qr-slot { width: 165px; height: 165px; }
     .closed-book { width: 60vw; }
     .pageflip { width: 60vw; }
-    .spine { height: 140px; font-size: 0.7rem; padding: 10px 7px; }
+    .spine { height: 160px; font-size: 0.8rem; padding: 10px 7px; }
     .spine .a { font-size: 0.6rem; margin-inline-start: 12px; }
     .shelf { gap: 6px; }
   }
@@ -101,20 +101,20 @@
   .plank { height: 14px; background: linear-gradient(180deg, #6b4a26, #3a2412); margin: 0 -8px; border-radius: 2px; box-shadow: 0 6px 12px -6px rgba(0,0,0,0.9); }
   .spine {
     border: 0; padding: 0; cursor: pointer; background: none;
-    height: 168px; border-radius: 3px 3px 0 0; position: relative;
+    height: 196px; border-radius: 3px 3px 0 0; position: relative;
     display: flex; align-items: center; justify-content: center;
     writing-mode: vertical-rl; text-orientation: mixed;
-    font-family: "Lora", serif; font-size: 0.8rem; line-height: 1.55;
-    color: #fbf3e2; text-align: center; padding: 14px 10px;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6);
+    font-family: "Lora", serif; font-size: 0.98rem; line-height: 1.5;
+    color: #fff8ea; text-align: center; padding: 14px 10px;
+    text-shadow: 0 1px 2px rgba(0,0,0,1), 0 2px 10px rgba(0,0,0,0.85);
     box-shadow: inset -4px 0 7px rgba(0,0,0,0.5), inset 2px 0 3px rgba(255,255,255,0.06);
     transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s;
   }
   .spine:hover { transform: translateY(-14px); box-shadow: inset -4px 0 7px rgba(0,0,0,0.5), 0 14px 20px -8px rgba(0,0,0,0.95); }
   .spine:focus-visible { outline: 2px solid #e8b34e; outline-offset: 2px; }
   .spine .t { display: block; max-height: 100%; font-weight: 600; letter-spacing: .04em; }
-  .spine .a { display: block; max-height: 100%; font-size: 0.66rem; color: #ffe9c4; font-style: italic; margin-inline-start: 16px; }
-  @media (max-width: 720px) { .shelf { grid-template-columns: repeat(3, 1fr); gap: 8px; } .spine { height: 150px; font-size: 0.72rem; } }
+  .spine .a { display: block; max-height: 100%; font-size: 0.78rem; color: #ffe9c4; font-style: italic; margin-inline-start: 16px; }
+  @media (max-width: 720px) { .shelf { grid-template-columns: repeat(3, 1fr); gap: 8px; } .spine { height: 176px; font-size: 0.86rem; } }
 
   /* libro che esce */
   .fly { position: fixed; inset: 0; z-index: 40; display: flex; background: rgba(10,6,2,0.88); backdrop-filter: blur(3px); padding: 18px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -242,7 +242,7 @@
       <source src="trailer-bibliomanzia.mp4" type="video/mp4">
     </video>
   </div>
-  <p class="small" style="margin-top:.6rem;">Se il video non parte, <a href="https://www.youtube.com/shorts/C4iyiAjC2LI" target="_blank" rel="noopener" style="color:#e8b34e;">lo guardi su YouTube</a> e poi torni qui.</p>
+  <p class="small" id="yt-fallback" style="margin-top:.6rem;display:none;">Se il video non parte, <a href="https://www.youtube.com/shorts/C4iyiAjC2LI" target="_blank" rel="noopener" style="color:#e8b34e;">lo guardi su YouTube</a> e poi torni qui.</p>
   <p class="q" style="margin-top:1.8rem;font-size:clamp(1.2rem,3.4vw,1.7rem);">…e il resto si scopre <em>in biblioteca</em>.</p>
   <div class="choices" style="margin-top:1.2rem;">
     <button class="choice" data-next="t6">Continua →</button>
@@ -743,6 +743,18 @@
     mostra(sWall);
   });
 
+  /* il link YouTube resta l'ultima spiaggia: compare solo se il video non si carica */
+  (function () {
+    var v = document.querySelector("#t5 video");
+    var fb = document.getElementById("yt-fallback");
+    if (!v || !fb) return;
+    function mostraFallback() { fb.style.display = "block"; }
+    var s = v.querySelector("source");
+    if (s) { s.addEventListener("error", mostraFallback); }
+    v.addEventListener("error", mostraFallback);
+    setTimeout(function () { if (v.readyState === 0) { mostraFallback(); } }, 10000);
+  })();
+
   /* ── il componimento collettivo (caviardage) ── */
   var poemBody = document.getElementById("poem-body");
   function esc(s) {
@@ -783,50 +795,50 @@
                    "è ancora nel silenzio."]);
       stanze.push([RIT]);
     } else {
-      /* 3 o 4 parole degli altri, pescate a caso; se nel database non ce ne sono abbastanza,
-         si completano con parole di default così la strofa resta intera */
-      var quanti = (altri.length >= 4 && Math.random() < 0.5) ? 4 : 3;
-      var scelte = pesca(altri, quanti);
+      /* 5 parole degli altri, pescate a caso; se nel database non ce ne sono abbastanza,
+         si completano con parole di default, senza mai ripetizioni */
+      var scelte = pesca(altri, 5);
       var d = 0;
-      while (scelte.length < 3) {
+      while (scelte.length < 5) {
         var cand = DEFAULTI[d++ % DEFAULTI.length];
         var gia = scelte.some(function (s) { return s.toLowerCase() === cand; });
-        if (!gia || d > 8) { scelte.push(cand); }
+        if (!gia || d > 12) { scelte.push(cand); }
       }
-      /* la parola scritta in questa sessione c'è sempre, mescolata con le altre */
+      /* la parola scritta in questa sessione c'è sempre, parte integrante del componimento */
       var mia = "";
       for (var j = mie.length - 1; j >= 0; j--) {
         if (String(mie[j] || "").trim()) { mia = String(mie[j]).trim(); break; }
       }
       var parole = (mia ? [mia] : []).concat(scelte);
       d = 0;
-      while (parole.length < 4) {
+      while (parole.length < 6) {
         var cand2 = DEFAULTI[d++ % DEFAULTI.length];
         var gia2 = parole.some(function (s) { return s.toLowerCase() === cand2; });
-        if (!gia2 || d > 8) { parole.push(cand2); }
+        if (!gia2 || d > 12) { parole.push(cand2); }
       }
-      /* mescolate: la parola personale cade ogni volta in una posizione diversa */
+      /* mescolate: le parole cadono ogni volta in strofe e posizioni diverse */
       parole.sort(function () { return Math.random() - 0.5; });
-      /* schemi brevi e suggestivi: una sola strofa di 3 versi che lega le parole */
-      var S4 = [
-        function (q) { return ["Si entra con " + Q(q[0]) + " in tasca,", "si attraversa " + Q(q[1]) + ",", "si esce con " + Q(q[2]) + " e " + Q(q[3]) + "."]; },
-        function (q) { return ["C'è una soglia fatta di " + Q(q[0]) + ",", "un corridoio che profuma di " + Q(q[1]) + ",", "e in fondo, ad aspettare, " + Q(q[2]) + " e " + Q(q[3]) + "."]; },
-        function (q) { return [Q(q[0]) + " guarda " + Q(q[1]) + ".", Q(q[2]) + " non dice nulla,", "ma tiene il posto accanto a " + Q(q[3]) + "."]; },
-        function (q) { return ["Tra le pagine: " + Q(q[0]) + ".", "Tra gli scaffali: " + Q(q[1]) + ".", "Tra noi: " + Q(q[2]) + " e " + Q(q[3]) + "."]; },
-        function (q) { return ["Un libro si apre su " + Q(q[0]) + ",", "un altro su " + Q(q[1]) + ";", "in mezzo, " + Q(q[2]) + " incontra " + Q(q[3]) + "."]; }
+      parole = parole.slice(0, 6);
+      /* tre strofe da tre versi, due parole ciascuna, ognuna con il ritornello */
+      var gruppi = [];
+      for (var p = 0; p < parole.length; p += 2) {
+        gruppi.push(parole.slice(p, p + 2));
+      }
+      /* solo schemi che usano ogni parola una volta sola: niente ripetizioni */
+      var S2 = [
+        function (q) { return ["Ha camminato tra gli scaffali di " + Q(q[0]) + ",", "e oltre la porta c'era " + Q(q[1]) + ".", "Nessuna delle due era un caso."]; },
+        function (q) { return ["In fondo al corridoio, " + Q(q[0]) + ";", "sulla soglia, " + Q(q[1]) + ",", "come un biglietto lasciato lì apposta."]; },
+        function (q) { return ["Ha attraversato " + Q(q[0]) + ",", "e ha incontrato " + Q(q[1]) + ",", "che aspettava da anni di essere letta."]; },
+        function (q) { return ["E quando ha pensato di essere persa,", Q(q[0]) + ", poi " + Q(q[1]) + ":", "due mani che la tirano su."]; },
+        function (q) { return ["Un libro si apre su " + Q(q[0]) + ",", "un altro su " + Q(q[1]) + ";", "in mezzo, una poltrona aspetta chi legge."]; },
+        function (q) { return ["Si sente l'eco di " + Q(q[0]) + ",", "tra uno scaffale e l'altro, " + Q(q[1]) + ",", "come una voce che legge a bassa voce."]; }
       ];
-      var S5 = [
-        function (q) { return ["Si entra con " + Q(q[0]) + ",", "si attraversano " + Q(q[1]) + " e " + Q(q[2]) + ",", "si esce con " + Q(q[3]) + " e " + Q(q[4]) + "."]; },
-        function (q) { return [Q(q[0]) + " apre la porta,", Q(q[1]) + " accende la lampada,", "e " + Q(q[2]) + ", " + Q(q[3]) + " e " + Q(q[4]) + " prendono posto tra gli scaffali."]; },
-        function (q) { return ["C'è chi cerca " + Q(q[0]) + ",", "chi sogna " + Q(q[1]) + " e " + Q(q[2]) + ",", "e chi, in fondo alla sala, custodisce " + Q(q[3]) + " e " + Q(q[4]) + "."]; },
-        function (q) { return ["Tra le pagine: " + Q(q[0]) + " e " + Q(q[1]) + ".", "Tra gli scaffali: " + Q(q[2]) + ".", "Tra noi: " + Q(q[3]) + " e " + Q(q[4]) + "."]; }
-      ];
-      var con5 = parole.length >= 5;
-      var schemi = con5 ? S5 : S4;
-      var schema = schemi[Math.floor(Math.random() * schemi.length)];
-      parole = parole.slice(0, con5 ? 5 : 4);
-      stanze.push(schema(parole));
-      stanze.push([RIT]);
+      /* tre schemi diversi per le tre strofe, scelti a caso */
+      var schemi = S2.slice().sort(function () { return Math.random() - 0.5; });
+      gruppi.forEach(function (g, i) {
+        stanze.push(schemi[i % schemi.length](g));
+        stanze.push([RIT]);
+      });
     }
     var totRighe = 0;
     poemBody.innerHTML = stanze.map(function (st, idx) {
