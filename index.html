@@ -33,10 +33,12 @@
   /* ── navigazione: barra di progresso, indietro, transizioni ── */
   #progressa { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(232,179,78,.12); z-index: 60; }
   #progressa i { display: block; height: 100%; width: 0; background: #e8b34e; transition: width .7s ease; }
-  #torna { position: fixed; top: 12px; left: 12px; z-index: 60; display: none; width: 40px; height: 40px;
-    border-radius: 50%; border: 1px solid #8a5a22; background: rgba(36,22,8,.8); color: #e8b34e;
-    font-size: 1.15rem; cursor: pointer; line-height: 1; }
-  #torna:active { transform: scale(.94); }
+  #torna, #avanti { position: fixed; top: 12px; z-index: 60; display: none; width: 44px; height: 44px;
+    border-radius: 50%; border: 1px solid #8a5a22; background: rgba(36,22,8,.9); color: #e8b34e;
+    font-size: 1.25rem; cursor: pointer; line-height: 1; }
+  #torna { left: 12px; }
+  #avanti { right: 12px; }
+  #torna:active, #avanti:active { transform: scale(.94); }
   .step:not(.hidden), .fly:not(.hidden) { animation: fade .6s ease-out; }
 
   .kicker { font-family: Arial, Helvetica, sans-serif; font-size: 0.72rem; letter-spacing: 4px; color: #c99a5e; margin-bottom: 18px; }
@@ -183,7 +185,8 @@
 <meta name="ai-disclosure" content="ai-autonomous" ai-model="GLM-5.3-Flash" ai-provider="Thaura"><meta name="generator" content="Thaura (GLM-5.3-Flash)"></head>
 <body>
 <div id="progressa" aria-hidden="true"><i></i></div>
-<button id="torna" type="button" aria-label="Torna alla tappa precedente">←</button>
+<button id="torna" type="button" aria-label="Torna alla pagina precedente">←</button>
+<button id="avanti" type="button" aria-label="Vai alla pagina successiva">→</button>
 
 <!-- ══════════ TAPPA 1 ══════════ -->
 <section class="step" id="t1">
@@ -240,11 +243,9 @@
   <p class="q">Intravedi il percorso.</p>
   <p>Questo è il <strong>trailer</strong> del percorso che facciamo dentro la Biblioteca Dionisio Roberti di Sansepolcro.</p>
   <div class="video-slot" style="margin-top:1.2rem;">
-    <video controls preload="metadata" playsinline style="width:100%;height:100%;object-fit:contain;background:#000;border-radius:inherit;">
-      <source src="trailer-bibliomanzia.mp4" type="video/mp4">
-    </video>
+    <iframe id="yt-player" data-src="https://www.youtube-nocookie.com/embed/C4iyiAjC2LI?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1" title="Trailer di Bibliomanzia" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="width:100%;height:100%;border:0;border-radius:inherit;background:#000;"></iframe>
   </div>
-  <p class="small" id="yt-fallback" style="margin-top:.6rem;display:none;">Se il video non parte, <a href="https://www.youtube.com/shorts/C4iyiAjC2LI" target="_blank" rel="noopener" style="color:#e8b34e;">lo guardi su YouTube</a> e poi torni qui.</p>
+  <p class="small" style="margin-top:.6rem;">Il video parte da solo ma senza audio: tocca il player per attivarlo. Se non si vede, <a href="https://www.youtube.com/shorts/C4iyiAjC2LI" target="_blank" rel="noopener" style="color:#e8b34e;">lo guardi su YouTube</a> e poi torni qui.</p>
   <p class="q" style="margin-top:1.8rem;font-size:clamp(1.2rem,3.4vw,1.7rem);">…e il resto si scopre <em>in biblioteca</em>.</p>
   <div class="choices" style="margin-top:1.2rem;">
     <button class="choice" data-next="t6">Continua →</button>
@@ -434,24 +435,49 @@
   var progresso = { "t1":7, "t2":15, "t3":23, "t4":31, "t5":40, "t6":48, "t7":56,
                     "s-libro":66, "scaffale":66, "s-fly":74, "s-read":78, "s-share":82,
                     "s-wall":86, "wall-private":88, "s-poem":93, "s-grazie":100 };
+  var PAGINE = ["t1","t2","t3","t4","t5","t6","t7","s-libro","scaffale","s-fly","s-read","s-share","s-wall","s-poem","s-grazie"];
+  var cronaca = [];
+  var futuro = [];
+  function paginaVisibile() {
+    for (var i = 0; i < PAGINE.length; i++) {
+      if (!document.getElementById(PAGINE[i]).classList.contains("hidden")) { return PAGINE[i]; }
+    }
+    return null;
+  }
   function aggiornaNav(id) {
     var v = progresso[id];
     if (v != null) { document.querySelector("#progressa i").style.width = v + "%"; }
-    var t = tappe.indexOf(id);
-    document.getElementById("torna").style.display = (t > 0) ? "block" : "none";
+    document.getElementById("torna").style.display = (cronaca.length > 0) ? "block" : "none";
+    document.getElementById("avanti").style.display = (futuro.length > 0) ? "block" : "none";
   }
-  document.getElementById("torna").addEventListener("click", function () {
-    var cur = tappe.filter(function (t) { return !document.getElementById(t).classList.contains("hidden"); })[0];
-    var i = tappe.indexOf(cur);
-    if (i > 0) { vaiA(tappe[i - 1]); }
-  });
-  function vaiA(id) {
-    tappe.forEach(function (t) { document.getElementById(t).classList.add("hidden"); });
-    var el = document.getElementById(id);
-    el.classList.remove("hidden");
+  /* apre una pagina senza toccare la cronaca (lo usano anche indietro e avanti) */
+  function apri(id) {
+    PAGINE.forEach(function (p) { document.getElementById(p).classList.add("hidden"); });
+    document.getElementById(id).classList.remove("hidden");
+    if (id === "t5") { attivaVideo(); }
     aggiornaNav(id);
     window.scrollTo({ top: 0 });
   }
+  /* apre una pagina memorizzando da dove si arriva: il tasto indietro ci riporta */
+  function vaiA(id) {
+    var cur = paginaVisibile();
+    if (cur && cur !== id) { cronaca.push(cur); futuro = []; }
+    apri(id);
+  }
+  document.getElementById("torna").addEventListener("click", function () {
+    var cur = paginaVisibile();
+    var dest = cronaca.pop();
+    if (!dest) { return; }
+    if (cur) { futuro.push(cur); }
+    apri(dest);
+  });
+  document.getElementById("avanti").addEventListener("click", function () {
+    var cur = paginaVisibile();
+    var dest = futuro.pop();
+    if (!dest) { return; }
+    if (cur) { cronaca.push(cur); }
+    apri(dest);
+  });
   document.querySelectorAll("[data-next]").forEach(function (b) {
     b.addEventListener("click", function () { vaiA(b.getAttribute("data-next")); });
   });
@@ -459,18 +485,12 @@
     tappe.forEach(function (t) { document.getElementById(t).classList.add("hidden"); });
   }
   document.getElementById("scelta-libro").addEventListener("click", function () {
-    nascondiTappe();
     document.getElementById("parola-libro").value = "";
-    document.getElementById("s-libro").classList.remove("hidden");
-    aggiornaNav("s-libro");
-    window.scrollTo({ top: 0 });
+    vaiA("s-libro");
     setTimeout(function () { document.getElementById("parola-libro").focus(); }, 350);
   });
   document.getElementById("scelta-shelf").addEventListener("click", function () {
-    nascondiTappe();
-    document.getElementById("scaffale").classList.remove("hidden");
-    aggiornaNav("scaffale");
-    window.scrollTo({ top: 0 });
+    vaiA("scaffale");
   });
   /* Invio conferma la parola, nei due percorsi */
   document.getElementById("parola-libro").addEventListener("keydown", function (e) {
@@ -629,16 +649,10 @@
   var current = null;
 
   function mostra(el) {
-    [sFly, sRead, sShare, sWall, sGrazie, sPoem].forEach(function (s) { s.classList.add("hidden"); });
-    sLibro.classList.add("hidden");
-    el.classList.remove("hidden");
-    aggiornaNav(el.id);
-    window.scrollTo({ top: 0 });
+    vaiA(el.id);
   }
   function mostraScaffale() {
-    [sFly, sRead, sShare, sWall, sGrazie, sPoem].forEach(function (s) { s.classList.add("hidden"); });
-    sLibro.classList.add("hidden");
-    window.scrollTo({ top: 0 });
+    vaiA("scaffale");
   }
 
   function entraNelLibro(libro) {
@@ -744,17 +758,12 @@
     componi("risultato");
   });
 
-  /* il link YouTube resta l'ultima spiaggia: compare solo se il video non si carica */
-  (function () {
-    var v = document.querySelector("#t5 video");
-    var fb = document.getElementById("yt-fallback");
-    if (!v || !fb) return;
-    function mostraFallback() { fb.style.display = "block"; }
-    var s = v.querySelector("source");
-    if (s) { s.addEventListener("error", mostraFallback); }
-    v.addEventListener("error", mostraFallback);
-    setTimeout(function () { if (v.readyState === 0) { mostraFallback(); } }, 10000);
-  })();
+  /* il player YouTube parte solo quando si arriva alla pagina del video,
+     così non consuma dati mentre la persona è ancora alle prime tappe */
+  function attivaVideo() {
+    var f = document.getElementById("yt-player");
+    if (f && !f.getAttribute("src")) { f.setAttribute("src", f.getAttribute("data-src")); }
+  }
 
   /* ── il componimento collettivo (caviardage) ── */
   var poemBody = document.getElementById("poem-body");
